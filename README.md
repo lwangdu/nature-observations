@@ -1,6 +1,6 @@
 # UC Nature iNaturalist Observations
 
-A small WordPress plugin for displaying live iNaturalist observations on UC Natural Reserve System sites. The plugin pulls observations from the iNaturalist API, caches responses with WordPress transients, and renders a Gutenberg block with cards, stats, filters, and pagination.
+A small WordPress plugin for displaying live iNaturalist observations on UC Nature sites. The plugin pulls observations from the iNaturalist API, caches responses with WordPress transients, and renders a Gutenberg block with cards, stats, filters, and pagination.
 
 ## Features
 
