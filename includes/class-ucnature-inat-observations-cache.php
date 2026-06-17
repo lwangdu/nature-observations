@@ -47,7 +47,7 @@ final class UCNature_INat_Observations_Cache {
 			return $args;
 		}
 
-		$cache_key = 'ucnature_inat_v3_' . md5( wp_json_encode( $args ) );
+		$cache_key = 'ucnature_inat_v4_' . md5( wp_json_encode( $args ) );
 		$cached    = get_transient( $cache_key );
 
 		if ( false !== $cached ) {
@@ -206,26 +206,37 @@ final class UCNature_INat_Observations_Cache {
 	}
 
 	private static function normalize_observation( $observation ) {
-		$taxon    = $observation['taxon'] ?? array();
-		$user     = $observation['user'] ?? array();
-		$photo    = $observation['photos'][0] ?? array();
-		$observer = sanitize_text_field( $user['name'] ?? '' );
+		$taxon           = is_array( $observation['taxon'] ?? null ) ? $observation['taxon'] : array();
+		$user            = is_array( $observation['user'] ?? null ) ? $observation['user'] : array();
+		$photo           = is_array( $observation['photos'][0] ?? null ) ? $observation['photos'][0] : array();
+		$scientific_name = sanitize_text_field( $taxon['name'] ?? '' );
+		$species_guess   = sanitize_text_field( $observation['species_guess'] ?? '' );
+		$common_name     = sanitize_text_field( $taxon['preferred_common_name'] ?? '' );
+		$observer        = sanitize_text_field( $user['name'] ?? '' );
 
 		if ( '' === $observer ) {
 			$observer = sanitize_text_field( $user['login'] ?? __( 'Unknown observer', 'ucnature-inat-observations' ) );
+		}
+
+		if ( '' === $common_name ) {
+			$common_name = '' !== $species_guess ? $species_guess : $scientific_name;
+		}
+
+		if ( '' === $common_name ) {
+			$common_name = __( 'Unknown species', 'ucnature-inat-observations' );
 		}
 
 		return array(
 			'id'              => absint( $observation['id'] ?? 0 ),
 			'url'             => esc_url_raw( $observation['uri'] ?? '' ),
 			'photo_url'       => self::photo_url( $photo['url'] ?? '' ),
-			'photo_alt'       => sanitize_text_field( $taxon['preferred_common_name'] ?? $observation['species_guess'] ?? __( 'iNaturalist observation', 'ucnature-inat-observations' ) ),
+			'photo_alt'       => self::photo_alt( $common_name, $scientific_name ),
 			'taxon_group'     => self::taxon_group_label( $taxon['iconic_taxon_name'] ?? '' ),
-			'common_name'     => sanitize_text_field( $taxon['preferred_common_name'] ?? $observation['species_guess'] ?? __( 'Unknown species', 'ucnature-inat-observations' ) ),
-			'scientific_name' => sanitize_text_field( $taxon['name'] ?? '' ),
+			'common_name'     => $common_name,
+			'scientific_name' => $scientific_name,
 			'observed_on'     => sanitize_text_field( $observation['observed_on'] ?? '' ),
 			'observer'        => $observer,
-			'quality_grade'   => sanitize_key( $observation['quality_grade'] ?? '' ),
+			'quality_grade'   => self::quality_grade( $observation['quality_grade'] ?? '' ),
 		);
 	}
 
@@ -267,6 +278,12 @@ final class UCNature_INat_Observations_Cache {
 
 		$project_id = self::project_id_from_slug( $args['project_slug'] );
 		if ( is_wp_error( $project_id ) ) {
+			if ( $args['project_id'] ) {
+				$args['project_slug'] = '';
+
+				return $args;
+			}
+
 			return $project_id;
 		}
 
@@ -472,6 +489,30 @@ final class UCNature_INat_Observations_Cache {
 		}
 
 		return str_replace( array( '/square.', '/thumb.' ), '/medium.', $url );
+	}
+
+	private static function photo_alt( $common_name, $scientific_name ) {
+		$name = '' !== $common_name && __( 'Unknown species', 'ucnature-inat-observations' ) !== $common_name ? $common_name : $scientific_name;
+
+		if ( '' === $name ) {
+			return __( 'iNaturalist observation photo', 'ucnature-inat-observations' );
+		}
+
+		return sprintf(
+			/* translators: %s: observation taxon name. */
+			__( 'iNaturalist observation photo of %s', 'ucnature-inat-observations' ),
+			$name
+		);
+	}
+
+	private static function quality_grade( $quality_grade ) {
+		$quality_grade = sanitize_key( $quality_grade );
+
+		if ( '' === $quality_grade ) {
+			return 'unknown';
+		}
+
+		return $quality_grade;
 	}
 
 	private static function taxon_group_label( $iconic_taxon_name ) {

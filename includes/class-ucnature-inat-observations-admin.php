@@ -99,7 +99,7 @@ final class UCNature_INat_Observations_Admin {
 		$options = is_array( $options ) ? $options : array();
 
 		return array(
-			'project_id'   => max( 1, absint( $options['project_id'] ?? 3234 ) ),
+			'project_id'   => absint( $options['project_id'] ?? 3234 ),
 			'project_slug' => sanitize_title( $options['project_slug'] ?? 'stunt-ranch-santa-monica-mountains-reserve' ),
 			'per_page'     => min( UCNature_INat_Observations_Cache::MAX_PER_PAGE, max( 1, absint( $options['per_page'] ?? 100 ) ) ),
 			'cache_ttl'    => min( DAY_IN_SECONDS, max( 300, absint( $options['cache_ttl'] ?? HOUR_IN_SECONDS ) ) ),
@@ -118,7 +118,7 @@ final class UCNature_INat_Observations_Admin {
 	public function render_project_id_field() {
 		$options = self::get_options();
 		?>
-		<input type="number" min="1" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[project_id]" value="<?php echo esc_attr( $options['project_id'] ); ?>" class="small-text">
+		<input type="number" min="0" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[project_id]" value="<?php echo esc_attr( $options['project_id'] ); ?>" class="small-text">
 		<p class="description"><?php esc_html_e( 'Used only when no project slug is set, or as a fallback reference.', 'ucnature-inat-observations' ); ?></p>
 		<?php
 	}

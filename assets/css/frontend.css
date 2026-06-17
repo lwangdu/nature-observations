@@ -206,6 +206,7 @@
 	border-radius: 4px;
 	display: flex;
 	flex-direction: column;
+	height: 100%;
 	min-width: 0;
 	overflow: hidden;
 }
@@ -241,6 +242,7 @@
 	display: flex;
 	flex: 1 1 auto;
 	flex-direction: column;
+	min-height: 14rem;
 	padding: 1rem;
 }
 
@@ -262,6 +264,7 @@
 	font-size: 1.125rem;
 	line-height: 1.25;
 	margin-block: 0 0.25rem;
+	overflow-wrap: anywhere;
 }
 
 .ucnature-inat-card__name a {
@@ -274,7 +277,13 @@
 .ucnature-inat-card__scientific {
 	color: #303832;
 	font-size: 0.95rem;
-	margin-block: 0 1.55rem;
+	line-height: 1.35;
+	margin-block: 0 1rem;
+	overflow-wrap: anywhere;
+}
+
+.ucnature-inat-card__details {
+	margin-block-start: auto;
 }
 
 .ucnature-inat-card__meta {
@@ -285,8 +294,10 @@
 	margin: 0;
 }
 
-.ucnature-inat-card__meta p {
+.ucnature-inat-card__meta p,
+.ucnature-inat-card__meta time {
 	color: var(--ucnature-inat-muted);
+	display: block;
 	margin: 0;
 }
 
