@@ -160,13 +160,13 @@ final class UCNature_iNat_Observations_Renderer {
 					<?php endif; ?>
 				</div>
 			<?php endif; ?>
-			<?php $this->render_filters( $group ); ?>
 			<?php if ( is_wp_error( $data ) ) : ?>
 				<p class="ucnature-inat__notice"><?php echo esc_html( $data->get_error_message() ); ?></p>
 			<?php elseif ( empty( $data['results'] ) ) : ?>
 				<p class="ucnature-inat__notice"><?php esc_html_e( 'No observations found for this filter.', 'ucnature-inat-observations' ); ?></p>
 			<?php else : ?>
 				<?php $this->render_stats_cards( UCNature_iNat_Observations_Cache::displayed_stats( $data ), $stats, $stats_title ); ?>
+				<?php $this->render_filters( $group ); ?>
 				<div class="ucnature-inat__grid">
 					<?php foreach ( $data['results'] as $observation ) : ?>
 						<?php include UCNATURE_INAT_PATH . 'templates/observation-card.php'; ?>
