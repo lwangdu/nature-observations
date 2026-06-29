@@ -19,11 +19,6 @@ final class UCNature_INat_Observations_Cache {
 	const MAX_PER_PAGE      = 200;
 
 	/**
-	 * Constructor placeholder for service instantiation.
-	 */
-	public function __construct() {}
-
-	/**
 	 * Get available observation group filters.
 	 *
 	 * @return array

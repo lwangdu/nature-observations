@@ -63,9 +63,11 @@
 		var activeMarker;
 		var markerById = {};
 
-		if ( ! canvas || typeof window.L === 'undefined' ) {
+		if ( wrapper.dataset.mapInitialized || ! canvas || typeof window.L === 'undefined' ) {
 			return;
 		}
+
+		wrapper.dataset.mapInitialized = 'true';
 
 		try {
 			observations = JSON.parse( wrapper.getAttribute( 'data-observations' ) || '[]' );
@@ -163,14 +165,29 @@
 		}, 80 );
 	}
 
-	function init() {
-		document.querySelectorAll( '.ucnature-inat-map[data-observations]' ).forEach( function ( wrapper ) {
+	function init( root ) {
+		var scope = root || document;
+		var wrappers = [];
+
+		if ( scope.matches && scope.matches( '.ucnature-inat-map[data-observations]' ) ) {
+			wrappers.push( scope );
+		}
+
+		scope.querySelectorAll( '.ucnature-inat-map[data-observations]' ).forEach( function ( wrapper ) {
+			wrappers.push( wrapper );
+		} );
+
+		wrappers.forEach( function ( wrapper ) {
 			initMap( wrapper );
 		} );
 	}
 
+	window.ucnatureINatInitMaps = init;
+
 	if ( document.readyState === 'loading' ) {
-		document.addEventListener( 'DOMContentLoaded', init );
+		document.addEventListener( 'DOMContentLoaded', function () {
+			init();
+		} );
 	} else {
 		init();
 	}

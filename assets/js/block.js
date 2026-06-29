@@ -1,5 +1,7 @@
 ( function ( blocks, element, components, blockEditor, serverSideRender ) {
 	var el = element.createElement;
+	var useEffect = element.useEffect;
+	var useRef = element.useRef;
 	var InspectorControls = blockEditor.InspectorControls;
 	var PanelBody = components.PanelBody;
 	var Placeholder = components.Placeholder;
@@ -10,6 +12,52 @@
 	var settings = window.ucnatureINatObservations || {};
 	var maxPerPage = settings.maxPerPage || 200;
 	var openLinksInNewTab = settings.openLinksInNewTab !== false;
+
+	function initPreviewMaps( root ) {
+		if ( window.ucnatureINatInitMaps ) {
+			window.ucnatureINatInitMaps( root );
+		}
+	}
+
+	function MapServerSidePreview( props ) {
+		var ref = useRef();
+
+		useEffect( function () {
+			var observer;
+			var root = ref.current;
+
+			if ( ! root ) {
+				return;
+			}
+
+			initPreviewMaps( root );
+			setTimeout( function () {
+				initPreviewMaps( root );
+			}, 250 );
+
+			if ( window.MutationObserver ) {
+				observer = new window.MutationObserver( function () {
+					initPreviewMaps( root );
+				} );
+				observer.observe( root, {
+					childList: true,
+					subtree: true
+				} );
+			}
+
+			return function () {
+				if ( observer ) {
+					observer.disconnect();
+				}
+			};
+		}, [ JSON.stringify( props.attributes ) ] );
+
+		return el(
+			'div',
+			{ ref: ref },
+			el( ServerSideRender, props )
+		);
+	}
 
 	blocks.registerBlockType( 'ucnature-inat/observations', {
 		title: 'iNaturalist Observations',
@@ -217,7 +265,7 @@
 						} )
 					)
 				),
-				el( ServerSideRender, {
+				el( MapServerSidePreview, {
 					block: 'ucnature-inat/observations-map',
 					attributes: attributes,
 					LoadingResponsePlaceholder: function () {

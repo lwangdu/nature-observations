@@ -26,7 +26,6 @@ define( 'UCNATURE_INAT_VERSION_OPTION', 'ucnature_inat_observations_version' );
 
 require_once UCNATURE_INAT_PATH . 'includes/class-ucnature-inat-observations-plugin.php';
 require_once UCNATURE_INAT_PATH . 'includes/class-ucnature-inat-observations-admin.php';
-require_once UCNATURE_INAT_PATH . 'includes/class-ucnature-inat-observations-rest.php';
 require_once UCNATURE_INAT_PATH . 'includes/class-ucnature-inat-observations-renderer.php';
 require_once UCNATURE_INAT_PATH . 'includes/class-ucnature-inat-observations-cache.php';
 

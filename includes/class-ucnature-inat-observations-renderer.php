@@ -90,7 +90,7 @@ final class UCNature_INat_Observations_Renderer {
 		wp_register_script(
 			'ucnature-inat-observations-block',
 			UCNATURE_INAT_URL . 'assets/js/block.js',
-			array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor', 'wp-server-side-render' ),
+			array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor', 'wp-server-side-render', 'ucnature-inat-observations-map' ),
 			file_exists( $block_js_path ) ? filemtime( $block_js_path ) : UCNATURE_INAT_VERSION,
 			true
 		);
@@ -154,7 +154,7 @@ final class UCNature_INat_Observations_Renderer {
 			array(
 				'api_version'     => 2,
 				'editor_script'   => 'ucnature-inat-observations-block',
-				'style'           => 'ucnature-inat-observations',
+				'style'           => array( 'leaflet', 'ucnature-inat-observations' ),
 				'render_callback' => array( $this, 'render_map_block' ),
 				'attributes'      => array(
 					'projectId'         => array(
