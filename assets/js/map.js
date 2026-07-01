@@ -33,7 +33,7 @@
 		var html = '';
 
 		if ( observation.photo_url ) {
-			html += '<img class="ucnature-inat-map__popup-image" src="' + escapeAttribute( observation.photo_url ) + '" alt="">';
+			html += '<img class="nature-inat-map__popup-image" src="' + escapeAttribute( observation.photo_url ) + '" alt="">';
 		}
 
 		html += '<strong>' + escapeHtml( observation.common_name ) + '</strong>';
@@ -54,7 +54,7 @@
 	}
 
 	function initMap( wrapper ) {
-		var canvas = wrapper.querySelector( '.ucnature-inat-map__canvas' );
+		var canvas = wrapper.querySelector( '.nature-inat-map__canvas' );
 		var observations;
 		var boundary;
 		var map;
@@ -89,8 +89,8 @@
 			scrollWheelZoom: false
 		} );
 
-		map.createPane( 'ucnatureReserveBoundary' );
-		map.getPane( 'ucnatureReserveBoundary' ).style.zIndex = 350;
+		map.createPane( 'natureReserveBoundary' );
+		map.getPane( 'natureReserveBoundary' ).style.zIndex = 350;
 
 		window.L.tileLayer( 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
 			maxZoom: 19,
@@ -99,7 +99,7 @@
 
 		if ( boundary && boundary.geometry ) {
 			boundaryLayer = window.L.geoJSON( boundary.geometry, {
-				pane: 'ucnatureReserveBoundary',
+				pane: 'natureReserveBoundary',
 				style: {
 					color: '#f0a000',
 					fillColor: '#d69a18',
@@ -129,7 +129,7 @@
 			markerById[ observation.id ] = marker;
 		} );
 
-		wrapper.addEventListener( 'ucnature-inat-observation-select', function ( event ) {
+		wrapper.addEventListener( 'nature-inat-observation-select', function ( event ) {
 			var marker = markerById[ event.detail.id ];
 
 			if ( ! marker ) {
@@ -169,11 +169,11 @@
 		var scope = root || document;
 		var wrappers = [];
 
-		if ( scope.matches && scope.matches( '.ucnature-inat-map[data-observations]' ) ) {
+		if ( scope.matches && scope.matches( '.nature-inat-map[data-observations]' ) ) {
 			wrappers.push( scope );
 		}
 
-		scope.querySelectorAll( '.ucnature-inat-map[data-observations]' ).forEach( function ( wrapper ) {
+		scope.querySelectorAll( '.nature-inat-map[data-observations]' ).forEach( function ( wrapper ) {
 			wrappers.push( wrapper );
 		} );
 
@@ -182,7 +182,7 @@
 		} );
 	}
 
-	window.ucnatureINatInitMaps = init;
+	window.natureINatInitMaps = init;
 
 	if ( document.readyState === 'loading' ) {
 		document.addEventListener( 'DOMContentLoaded', function () {

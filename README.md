@@ -1,6 +1,6 @@
-# UC Nature iNaturalist Observations
+# Nature iNaturalist Observations
 
-A small WordPress plugin for displaying live iNaturalist observations on UC Nature sites. The plugin pulls observations from the iNaturalist API, caches responses with WordPress transients, and renders a Gutenberg block with cards, stats, filters, and pagination.
+A small WordPress plugin for displaying live iNaturalist observations on Nature sites. The plugin pulls observations from the iNaturalist API, caches responses with WordPress transients, and renders a Gutenberg block with cards, stats, filters, and pagination.
 
 ## Features
 
@@ -14,8 +14,8 @@ A small WordPress plugin for displaying live iNaturalist observations on UC Natu
 - Optional setting for opening iNaturalist links in a new tab.
 - Admin cache clearing for refreshing stale iNaturalist data.
 - Cached iNaturalist API requests to reduce page-load and API pressure.
-- Legacy shortcode support via `[ucnature_inat_observations]`.
-- Legacy map shortcode support via `[ucnature_inat_observations_map]`.
+- Legacy shortcode support via `[nature_inat_observations]`.
+- Legacy map shortcode support via `[nature_inat_observations_map]`.
 
 ## Usage
 
@@ -35,7 +35,7 @@ The plugin creates draft starter `iNaturalist Observations` and `Map of Observat
 
 ## Map Page
 
-Use the `iNaturalist Observations Map` block or `[ucnature_inat_observations_map]` shortcode to show a compact map of recent georeferenced observations with a small recent-observations photo strip underneath.
+Use the `iNaturalist Observations Map` block or `[nature_inat_observations_map]` shortcode to show a compact map of recent georeferenced observations with a small recent-observations photo strip underneath.
 
 The starter map page uses the Stunt Ranch project and up to 200 mapped observations by default.
 

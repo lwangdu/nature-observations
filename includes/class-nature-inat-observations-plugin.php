@@ -2,7 +2,7 @@
 /**
  * Main plugin coordinator.
  *
- * @package UCNature_INat_Observations
+ * @package Nature_INat_Observations
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -12,18 +12,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Coordinates the plugin services.
  */
-final class UCNature_INat_Observations_Plugin {
+final class Nature_INat_Observations_Plugin {
 	/**
 	 * Singleton instance.
 	 *
-	 * @var UCNature_INat_Observations_Plugin|null
+	 * @var Nature_INat_Observations_Plugin|null
 	 */
 	private static $instance = null;
 
 	/**
 	 * Get the plugin singleton.
 	 *
-	 * @return UCNature_INat_Observations_Plugin
+	 * @return Nature_INat_Observations_Plugin
 	 */
 	public static function instance() {
 		if ( null === self::$instance ) {
@@ -36,7 +36,7 @@ final class UCNature_INat_Observations_Plugin {
 	 * Register plugin services.
 	 */
 	private function __construct() {
-		new UCNature_INat_Observations_Admin();
-		new UCNature_INat_Observations_Renderer();
+		new Nature_INat_Observations_Admin();
+		new Nature_INat_Observations_Renderer();
 	}
 }

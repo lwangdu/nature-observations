@@ -9,13 +9,13 @@
 	var TextControl = components.TextControl;
 	var ToggleControl = components.ToggleControl;
 	var ServerSideRender = serverSideRender;
-	var settings = window.ucnatureINatObservations || {};
+	var settings = window.natureINatObservations || {};
 	var maxPerPage = settings.maxPerPage || 200;
 	var openLinksInNewTab = settings.openLinksInNewTab !== false;
 
 	function initPreviewMaps( root ) {
-		if ( window.ucnatureINatInitMaps ) {
-			window.ucnatureINatInitMaps( root );
+		if ( window.natureINatInitMaps ) {
+			window.natureINatInitMaps( root );
 		}
 	}
 
@@ -59,7 +59,7 @@
 		);
 	}
 
-	blocks.registerBlockType( 'ucnature-inat/observations', {
+	blocks.registerBlockType( 'nature-inat/observations', {
 		title: 'iNaturalist Observations',
 		icon: 'visibility',
 		category: 'widgets',
@@ -150,7 +150,7 @@
 					)
 				),
 				el( ServerSideRender, {
-					block: 'ucnature-inat/observations',
+					block: 'nature-inat/observations',
 					attributes: attributes,
 					LoadingResponsePlaceholder: function () {
 						return el(
@@ -175,7 +175,7 @@
 		}
 	} );
 
-	blocks.registerBlockType( 'ucnature-inat/observations-map', {
+	blocks.registerBlockType( 'nature-inat/observations-map', {
 		title: 'iNaturalist Observations Map',
 		icon: 'location-alt',
 		category: 'widgets',
@@ -266,7 +266,7 @@
 					)
 				),
 				el( MapServerSidePreview, {
-					block: 'ucnature-inat/observations-map',
+					block: 'nature-inat/observations-map',
 					attributes: attributes,
 					LoadingResponsePlaceholder: function () {
 						return el(

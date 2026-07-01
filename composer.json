@@ -1,6 +1,6 @@
 {
-	"name": "lwangdu/ucnature-inat-observations",
-	"description": "WordPress block plugin for displaying cached iNaturalist observations on UC Nature sites.",
+	"name": "lwangdu/nature-inat-observations",
+	"description": "WordPress block plugin for displaying cached iNaturalist observations on Nature sites.",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
 	"require-dev": {

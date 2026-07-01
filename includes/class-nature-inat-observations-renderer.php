@@ -2,7 +2,7 @@
 /**
  * Block, shortcode, and front-end rendering.
  *
- * @package UCNature_INat_Observations
+ * @package Nature_INat_Observations
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Renders observation blocks and shortcodes.
  */
-final class UCNature_INat_Observations_Renderer {
+final class Nature_INat_Observations_Renderer {
 	/**
 	 * Hook asset, block, and shortcode registration.
 	 */
@@ -20,62 +20,62 @@ final class UCNature_INat_Observations_Renderer {
 		add_action( 'init', array( $this, 'register_assets' ), 5 );
 		add_action( 'init', array( $this, 'register_block' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_interactivity_assets' ) );
-		add_shortcode( 'ucnature_inat_observations', array( $this, 'render_shortcode' ) );
-		add_shortcode( 'ucnature_inat_observations_map', array( $this, 'render_map_shortcode' ) );
+		add_shortcode( 'nature_inat_observations', array( $this, 'render_shortcode' ) );
+		add_shortcode( 'nature_inat_observations_map', array( $this, 'render_map_shortcode' ) );
 	}
 
 	/**
 	 * Register front-end styles and scripts.
 	 */
 	public function register_assets() {
-		$frontend_css_path = UCNATURE_INAT_PATH . 'assets/css/frontend.css';
-		$block_js_path     = UCNATURE_INAT_PATH . 'assets/js/block.js';
-		$map_js_path       = UCNATURE_INAT_PATH . 'assets/js/map.js';
-		$view_js_path      = UCNATURE_INAT_PATH . 'assets/js/view.js';
-		$leaflet_css_path  = UCNATURE_INAT_PATH . 'assets/vendor/leaflet/leaflet.css';
-		$leaflet_js_path   = UCNATURE_INAT_PATH . 'assets/vendor/leaflet/leaflet.js';
+		$frontend_css_path = NATURE_INAT_PATH . 'assets/css/frontend.css';
+		$block_js_path     = NATURE_INAT_PATH . 'assets/js/block.js';
+		$map_js_path       = NATURE_INAT_PATH . 'assets/js/map.js';
+		$view_js_path      = NATURE_INAT_PATH . 'assets/js/view.js';
+		$leaflet_css_path  = NATURE_INAT_PATH . 'assets/vendor/leaflet/leaflet.css';
+		$leaflet_js_path   = NATURE_INAT_PATH . 'assets/vendor/leaflet/leaflet.js';
 
 		wp_register_style(
 			'leaflet',
-			UCNATURE_INAT_URL . 'assets/vendor/leaflet/leaflet.css',
+			NATURE_INAT_URL . 'assets/vendor/leaflet/leaflet.css',
 			array(),
 			file_exists( $leaflet_css_path ) ? filemtime( $leaflet_css_path ) : '1.9.4'
 		);
 
 		wp_register_style(
-			'ucnature-inat-observations',
-			UCNATURE_INAT_URL . 'assets/css/frontend.css',
+			'nature-inat-observations',
+			NATURE_INAT_URL . 'assets/css/frontend.css',
 			array(),
-			file_exists( $frontend_css_path ) ? filemtime( $frontend_css_path ) : UCNATURE_INAT_VERSION
+			file_exists( $frontend_css_path ) ? filemtime( $frontend_css_path ) : NATURE_INAT_VERSION
 		);
 
 		wp_register_script(
 			'leaflet',
-			UCNATURE_INAT_URL . 'assets/vendor/leaflet/leaflet.js',
+			NATURE_INAT_URL . 'assets/vendor/leaflet/leaflet.js',
 			array(),
 			file_exists( $leaflet_js_path ) ? filemtime( $leaflet_js_path ) : '1.9.4',
 			true
 		);
 
 		wp_register_script(
-			'ucnature-inat-observations-map',
-			UCNATURE_INAT_URL . 'assets/js/map.js',
+			'nature-inat-observations-map',
+			NATURE_INAT_URL . 'assets/js/map.js',
 			array( 'leaflet' ),
-			file_exists( $map_js_path ) ? filemtime( $map_js_path ) : UCNATURE_INAT_VERSION,
+			file_exists( $map_js_path ) ? filemtime( $map_js_path ) : NATURE_INAT_VERSION,
 			true
 		);
 
 		if ( function_exists( 'wp_register_script_module' ) ) {
 			wp_register_script_module(
-				'ucnature-inat-observations-view',
-				UCNATURE_INAT_URL . 'assets/js/view.js',
+				'nature-inat-observations-view',
+				NATURE_INAT_URL . 'assets/js/view.js',
 				array(
 					array(
 						'id'     => '@wordpress/interactivity',
 						'import' => 'static',
 					),
 				),
-				file_exists( $view_js_path ) ? filemtime( $view_js_path ) : UCNATURE_INAT_VERSION
+				file_exists( $view_js_path ) ? filemtime( $view_js_path ) : NATURE_INAT_VERSION
 			);
 		}
 	}
@@ -84,21 +84,21 @@ final class UCNature_INat_Observations_Renderer {
 	 * Register dynamic blocks.
 	 */
 	public function register_block() {
-		$options       = UCNature_INat_Observations_Admin::get_options();
-		$block_js_path = UCNATURE_INAT_PATH . 'assets/js/block.js';
+		$options       = Nature_INat_Observations_Admin::get_options();
+		$block_js_path = NATURE_INAT_PATH . 'assets/js/block.js';
 
 		wp_register_script(
-			'ucnature-inat-observations-block',
-			UCNATURE_INAT_URL . 'assets/js/block.js',
-			array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor', 'wp-server-side-render', 'ucnature-inat-observations-map' ),
-			file_exists( $block_js_path ) ? filemtime( $block_js_path ) : UCNATURE_INAT_VERSION,
+			'nature-inat-observations-block',
+			NATURE_INAT_URL . 'assets/js/block.js',
+			array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor', 'wp-server-side-render', 'nature-inat-observations-map' ),
+			file_exists( $block_js_path ) ? filemtime( $block_js_path ) : NATURE_INAT_VERSION,
 			true
 		);
 		wp_add_inline_script(
-			'ucnature-inat-observations-block',
-			'window.ucnatureINatObservations = ' . wp_json_encode(
+			'nature-inat-observations-block',
+			'window.natureINatObservations = ' . wp_json_encode(
 				array(
-					'maxPerPage'        => UCNature_INat_Observations_Cache::MAX_PER_PAGE,
+					'maxPerPage'        => Nature_INat_Observations_Cache::MAX_PER_PAGE,
 					'openLinksInNewTab' => ! empty( $options['open_new_tab'] ),
 				)
 			) . ';',
@@ -106,11 +106,11 @@ final class UCNature_INat_Observations_Renderer {
 		);
 
 		register_block_type(
-			'ucnature-inat/observations',
+			'nature-inat/observations',
 			array(
 				'api_version'     => 2,
-				'editor_script'   => 'ucnature-inat-observations-block',
-				'style'           => 'ucnature-inat-observations',
+				'editor_script'   => 'nature-inat-observations-block',
+				'style'           => 'nature-inat-observations',
 				'render_callback' => array( $this, 'render_block' ),
 				'attributes'      => array(
 					'projectId'         => array(
@@ -150,11 +150,11 @@ final class UCNature_INat_Observations_Renderer {
 		);
 
 		register_block_type(
-			'ucnature-inat/observations-map',
+			'nature-inat/observations-map',
 			array(
 				'api_version'     => 2,
-				'editor_script'   => 'ucnature-inat-observations-block',
-				'style'           => array( 'leaflet', 'ucnature-inat-observations' ),
+				'editor_script'   => 'nature-inat-observations-block',
+				'style'           => array( 'leaflet', 'nature-inat-observations' ),
 				'render_callback' => array( $this, 'render_map_block' ),
 				'attributes'      => array(
 					'projectId'         => array(
@@ -175,7 +175,7 @@ final class UCNature_INat_Observations_Renderer {
 					),
 					'perPage'           => array(
 						'type'    => 'number',
-						'default' => min( UCNature_INat_Observations_Cache::MAX_PER_PAGE, 200 ),
+						'default' => min( Nature_INat_Observations_Cache::MAX_PER_PAGE, 200 ),
 					),
 					'openLinksInNewTab' => array(
 						'type'    => 'boolean',
@@ -208,12 +208,12 @@ final class UCNature_INat_Observations_Renderer {
 		}
 
 		if (
-			has_block( 'ucnature-inat/observations', $post ) ||
-			has_block( 'ucnature-inat/observations-map', $post ) ||
-			has_shortcode( $post->post_content, 'ucnature_inat_observations' ) ||
-			has_shortcode( $post->post_content, 'ucnature_inat_observations_map' )
+			has_block( 'nature-inat/observations', $post ) ||
+			has_block( 'nature-inat/observations-map', $post ) ||
+			has_shortcode( $post->post_content, 'nature_inat_observations' ) ||
+			has_shortcode( $post->post_content, 'nature_inat_observations_map' )
 		) {
-			wp_enqueue_script_module( 'ucnature-inat-observations-view' );
+			wp_enqueue_script_module( 'nature-inat-observations-view' );
 		}
 	}
 
@@ -224,7 +224,7 @@ final class UCNature_INat_Observations_Renderer {
 	 * @return string
 	 */
 	public function render_shortcode( $atts ) {
-		$options = UCNature_INat_Observations_Admin::get_options();
+		$options = Nature_INat_Observations_Admin::get_options();
 		$atts    = shortcode_atts(
 			array(
 				'project_id'   => $options['project_id'],
@@ -233,11 +233,11 @@ final class UCNature_INat_Observations_Renderer {
 				'user_id'      => '',
 				'per_page'     => $options['per_page'],
 				'open_links'   => ! empty( $options['open_new_tab'] ),
-				'title'        => __( 'iNaturalist Observations', 'ucnature-inat-observations' ),
-				'summary'      => __( 'Live observations from this reserve on iNaturalist.', 'ucnature-inat-observations' ),
+				'title'        => __( 'iNaturalist Observations', 'nature-inat-observations' ),
+				'summary'      => __( 'Live observations from this reserve on iNaturalist.', 'nature-inat-observations' ),
 			),
 			$atts,
-			'ucnature_inat_observations'
+			'nature_inat_observations'
 		);
 
 		return $this->render(
@@ -268,7 +268,7 @@ final class UCNature_INat_Observations_Renderer {
 				'place_id'     => $attributes['placeId'] ?? 0,
 				'user_id'      => $attributes['userId'] ?? '',
 				'per_page'     => $attributes['perPage'] ?? 100,
-				'open_links'   => $attributes['openLinksInNewTab'] ?? UCNature_INat_Observations_Admin::get_options()['open_new_tab'],
+				'open_links'   => $attributes['openLinksInNewTab'] ?? Nature_INat_Observations_Admin::get_options()['open_new_tab'],
 				'title'        => $attributes['title'] ?? '',
 				'summary'      => $attributes['summary'] ?? '',
 			)
@@ -282,20 +282,20 @@ final class UCNature_INat_Observations_Renderer {
 	 * @return string
 	 */
 	public function render_map_shortcode( $atts ) {
-		$options = UCNature_INat_Observations_Admin::get_options();
+		$options = Nature_INat_Observations_Admin::get_options();
 		$atts    = shortcode_atts(
 			array(
 				'project_id'   => $options['project_id'],
 				'project_slug' => $options['project_slug'],
 				'place_id'     => 0,
 				'user_id'      => '',
-				'per_page'     => min( UCNature_INat_Observations_Cache::MAX_PER_PAGE, 200 ),
+				'per_page'     => min( Nature_INat_Observations_Cache::MAX_PER_PAGE, 200 ),
 				'open_links'   => ! empty( $options['open_new_tab'] ),
 				'title'        => '',
 				'summary'      => '',
 			),
 			$atts,
-			'ucnature_inat_observations_map'
+			'nature_inat_observations_map'
 		);
 
 		return $this->render_map(
@@ -326,7 +326,7 @@ final class UCNature_INat_Observations_Renderer {
 				'place_id'     => $attributes['placeId'] ?? 0,
 				'user_id'      => $attributes['userId'] ?? '',
 				'per_page'     => $attributes['perPage'] ?? 200,
-				'open_links'   => $attributes['openLinksInNewTab'] ?? UCNature_INat_Observations_Admin::get_options()['open_new_tab'],
+				'open_links'   => $attributes['openLinksInNewTab'] ?? Nature_INat_Observations_Admin::get_options()['open_new_tab'],
 				'title'        => $attributes['title'] ?? '',
 				'summary'      => $attributes['summary'] ?? '',
 			)
@@ -341,16 +341,16 @@ final class UCNature_INat_Observations_Renderer {
 	 */
 	private function render_map( $args ) {
 		wp_enqueue_style( 'leaflet' );
-		wp_enqueue_style( 'ucnature-inat-observations' );
-		wp_enqueue_script( 'ucnature-inat-observations-map' );
+		wp_enqueue_style( 'nature-inat-observations' );
+		wp_enqueue_script( 'nature-inat-observations-map' );
 
 		$use_interactivity_api = function_exists( 'wp_enqueue_script_module' ) && function_exists( 'wp_interactivity_data_wp_context' );
 		if ( $use_interactivity_api ) {
-			wp_enqueue_script_module( 'ucnature-inat-observations-view' );
+			wp_enqueue_script_module( 'nature-inat-observations-view' );
 		}
 
-		$raw_group  = isset( $_GET['ucnature_inat_group'] ) ? sanitize_text_field( wp_unslash( $_GET['ucnature_inat_group'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$group      = UCNature_INat_Observations_Cache::sanitize_group( $raw_group );
+		$raw_group  = isset( $_GET['nature_inat_group'] ) ? sanitize_text_field( wp_unslash( $_GET['nature_inat_group'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$group      = Nature_INat_Observations_Cache::sanitize_group( $raw_group );
 		$query_args = array(
 			'project_id'   => $args['project_id'],
 			'project_slug' => $args['project_slug'],
@@ -361,12 +361,12 @@ final class UCNature_INat_Observations_Renderer {
 			'group'        => $group,
 			'geo'          => true,
 		);
-		$data       = UCNature_INat_Observations_Cache::get_observations( $query_args );
-		$boundary   = UCNature_INat_Observations_Cache::get_source_boundary( $query_args );
+		$data       = Nature_INat_Observations_Cache::get_observations( $query_args );
+		$boundary   = Nature_INat_Observations_Cache::get_source_boundary( $query_args );
 
-		$heading_id            = wp_unique_id( 'ucnature-inat-map-heading-' );
-		$map_id                = wp_unique_id( 'ucnature-inat-map-' );
-		$rail_id               = wp_unique_id( 'ucnature-inat-map-thumbs-' );
+		$heading_id            = wp_unique_id( 'nature-inat-map-heading-' );
+		$map_id                = wp_unique_id( 'nature-inat-map-' );
+		$rail_id               = wp_unique_id( 'nature-inat-map-thumbs-' );
 		$title                 = sanitize_text_field( $args['title'] );
 		$summary               = sanitize_text_field( $args['summary'] );
 		$has_header            = '' !== $title || '' !== $summary;
@@ -380,39 +380,39 @@ final class UCNature_INat_Observations_Renderer {
 				'hasPrevious' => false,
 				'hasNext'     => count( $observations ) > 1,
 			),
-			'ucnature-inat/observations-map'
+			'nature-inat/observations-map'
 		) : '';
 
 		ob_start();
 		?>
-		<section class="ucnature-inat ucnature-inat-map-view"<?php echo $labelledby; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+		<section class="nature-inat nature-inat-map-view"<?php echo $labelledby; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 			<?php if ( $has_header ) : ?>
-				<div class="ucnature-inat__header">
+				<div class="nature-inat__header">
 					<?php if ( '' !== $title ) : ?>
-						<h2 id="<?php echo esc_attr( $heading_id ); ?>" class="ucnature-inat__title"><?php echo esc_html( $title ); ?></h2>
+						<h2 id="<?php echo esc_attr( $heading_id ); ?>" class="nature-inat__title"><?php echo esc_html( $title ); ?></h2>
 					<?php endif; ?>
 					<?php if ( '' !== $summary ) : ?>
-						<p class="ucnature-inat__summary"><?php echo esc_html( $summary ); ?></p>
+						<p class="nature-inat__summary"><?php echo esc_html( $summary ); ?></p>
 					<?php endif; ?>
 				</div>
 			<?php endif; ?>
 			<?php $this->render_filters( $group ); ?>
 			<?php if ( is_wp_error( $data ) ) : ?>
-				<p class="ucnature-inat__notice"><?php echo esc_html( $data->get_error_message() ); ?></p>
+				<p class="nature-inat__notice"><?php echo esc_html( $data->get_error_message() ); ?></p>
 			<?php elseif ( empty( $observations ) && empty( $boundary_data ) ) : ?>
-				<p class="ucnature-inat__notice"><?php esc_html_e( 'No mapped observations found for this filter.', 'ucnature-inat-observations' ); ?></p>
+				<p class="nature-inat__notice"><?php esc_html_e( 'No mapped observations found for this filter.', 'nature-inat-observations' ); ?></p>
 			<?php else : ?>
-				<div class="ucnature-inat-map" data-observations="<?php echo esc_attr( wp_json_encode( $observations ) ); ?>" data-boundary="<?php echo esc_attr( wp_json_encode( $boundary_data ) ); ?>">
-					<div id="<?php echo esc_attr( $map_id ); ?>" class="ucnature-inat-map__canvas" data-map-id="<?php echo esc_attr( $map_id ); ?>"></div>
-					<div class="ucnature-inat-map__recent" aria-label="<?php esc_attr_e( 'Recent mapped observations', 'ucnature-inat-observations' ); ?>">
-						<h3 class="ucnature-inat-map__recent-title"><?php esc_html_e( 'Recent Observations', 'ucnature-inat-observations' ); ?></h3>
-						<div class="ucnature-inat-map__carousel"<?php echo $use_interactivity_api ? ' data-wp-interactive="ucnature-inat/observations-map" ' . $carousel_context . ' data-wp-init="callbacks.initCarousel"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-							<button class="ucnature-inat-map__nav ucnature-inat-map__nav--prev" type="button" aria-label="<?php esc_attr_e( 'Previous observations', 'ucnature-inat-observations' ); ?>"<?php echo $use_interactivity_api ? ' data-wp-on--click="actions.scrollPrevious" data-wp-bind--disabled="state.isPreviousDisabled"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+				<div class="nature-inat-map" data-observations="<?php echo esc_attr( wp_json_encode( $observations ) ); ?>" data-boundary="<?php echo esc_attr( wp_json_encode( $boundary_data ) ); ?>">
+					<div id="<?php echo esc_attr( $map_id ); ?>" class="nature-inat-map__canvas" data-map-id="<?php echo esc_attr( $map_id ); ?>"></div>
+					<div class="nature-inat-map__recent" aria-label="<?php esc_attr_e( 'Recent mapped observations', 'nature-inat-observations' ); ?>">
+						<h3 class="nature-inat-map__recent-title"><?php esc_html_e( 'Recent Observations', 'nature-inat-observations' ); ?></h3>
+						<div class="nature-inat-map__carousel"<?php echo $use_interactivity_api ? ' data-wp-interactive="nature-inat/observations-map" ' . $carousel_context . ' data-wp-init="callbacks.initCarousel"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+							<button class="nature-inat-map__nav nature-inat-map__nav--prev" type="button" aria-label="<?php esc_attr_e( 'Previous observations', 'nature-inat-observations' ); ?>"<?php echo $use_interactivity_api ? ' data-wp-on--click="actions.scrollPrevious" data-wp-bind--disabled="state.isPreviousDisabled"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 								<span aria-hidden="true">‹</span>
 							</button>
-							<div id="<?php echo esc_attr( $rail_id ); ?>" class="ucnature-inat-map__thumbs" tabindex="0">
+							<div id="<?php echo esc_attr( $rail_id ); ?>" class="nature-inat-map__thumbs" tabindex="0">
 								<?php if ( empty( $observations ) ) : ?>
-									<p class="ucnature-inat-map__empty"><?php esc_html_e( 'No recent mapped observations found for this filter.', 'ucnature-inat-observations' ); ?></p>
+									<p class="nature-inat-map__empty"><?php esc_html_e( 'No recent mapped observations found for this filter.', 'nature-inat-observations' ); ?></p>
 								<?php else : ?>
 									<?php foreach ( array_slice( $observations, 0, 12 ) as $observation ) : ?>
 										<?php
@@ -420,10 +420,10 @@ final class UCNature_INat_Observations_Renderer {
 											array(
 												'observationId' => absint( $observation['id'] ),
 											),
-											'ucnature-inat/observations-map'
+											'nature-inat/observations-map'
 										) : '';
 										?>
-										<a class="ucnature-inat-map__thumb" href="<?php echo esc_url( $observation['url'] ); ?>"<?php echo $open_links_in_new_tab ? ' target="_blank" rel="noopener noreferrer"' : ''; ?><?php echo $use_interactivity_api ? ' ' . $thumb_context . ' data-wp-on--focus="actions.selectObservation" data-wp-on--mouseenter="actions.selectObservation" data-wp-on--pointerdown="actions.selectObservation" data-wp-class--is-active="state.isActiveObservation" data-wp-bind--aria-current="state.activeObservationAriaCurrent"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+										<a class="nature-inat-map__thumb" href="<?php echo esc_url( $observation['url'] ); ?>"<?php echo $open_links_in_new_tab ? ' target="_blank" rel="noopener noreferrer"' : ''; ?><?php echo $use_interactivity_api ? ' ' . $thumb_context . ' data-wp-on--focus="actions.selectObservation" data-wp-on--mouseenter="actions.selectObservation" data-wp-on--pointerdown="actions.selectObservation" data-wp-class--is-active="state.isActiveObservation" data-wp-bind--aria-current="state.activeObservationAriaCurrent"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 											<?php if ( '' !== $observation['photo_url'] ) : ?>
 												<img src="<?php echo esc_url( $observation['photo_url'] ); ?>" alt="<?php echo esc_attr( $observation['photo_alt'] ); ?>">
 											<?php else : ?>
@@ -433,7 +433,7 @@ final class UCNature_INat_Observations_Renderer {
 									<?php endforeach; ?>
 								<?php endif; ?>
 							</div>
-							<button class="ucnature-inat-map__nav ucnature-inat-map__nav--next" type="button" aria-label="<?php esc_attr_e( 'Next observations', 'ucnature-inat-observations' ); ?>"<?php echo $use_interactivity_api ? ' data-wp-on--click="actions.scrollNext" data-wp-bind--disabled="state.isNextDisabled"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+							<button class="nature-inat-map__nav nature-inat-map__nav--next" type="button" aria-label="<?php esc_attr_e( 'Next observations', 'nature-inat-observations' ); ?>"<?php echo $use_interactivity_api ? ' data-wp-on--click="actions.scrollNext" data-wp-bind--disabled="state.isNextDisabled"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 								<span aria-hidden="true">›</span>
 							</button>
 						</div>
@@ -453,16 +453,16 @@ final class UCNature_INat_Observations_Renderer {
 	 * @return string
 	 */
 	private function render( $args ) {
-		wp_enqueue_style( 'ucnature-inat-observations' );
+		wp_enqueue_style( 'nature-inat-observations' );
 
 		$use_interactivity_api = function_exists( 'wp_enqueue_script_module' ) && function_exists( 'wp_interactivity_data_wp_context' );
 		if ( $use_interactivity_api ) {
-			wp_enqueue_script_module( 'ucnature-inat-observations-view' );
+			wp_enqueue_script_module( 'nature-inat-observations-view' );
 		}
 
-		$raw_group  = isset( $_GET['ucnature_inat_group'] ) ? sanitize_text_field( wp_unslash( $_GET['ucnature_inat_group'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$raw_page   = isset( $_GET['ucnature_inat_page'] ) ? absint( wp_unslash( $_GET['ucnature_inat_page'] ) ) : 1; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$group      = UCNature_INat_Observations_Cache::sanitize_group( $raw_group );
+		$raw_group  = isset( $_GET['nature_inat_group'] ) ? sanitize_text_field( wp_unslash( $_GET['nature_inat_group'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$raw_page   = isset( $_GET['nature_inat_page'] ) ? absint( wp_unslash( $_GET['nature_inat_page'] ) ) : 1; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$group      = Nature_INat_Observations_Cache::sanitize_group( $raw_group );
 		$page       = max( 1, absint( $raw_page ) );
 		$query_args = array(
 			'project_id'   => $args['project_id'],
@@ -473,46 +473,46 @@ final class UCNature_INat_Observations_Renderer {
 			'page'         => $page,
 			'group'        => $group,
 		);
-		$data       = UCNature_INat_Observations_Cache::get_observations( $query_args );
+		$data       = Nature_INat_Observations_Cache::get_observations( $query_args );
 
-		$heading_id            = wp_unique_id( 'ucnature-inat-heading-' );
+		$heading_id            = wp_unique_id( 'nature-inat-heading-' );
 		$title                 = sanitize_text_field( $args['title'] );
 		$summary               = sanitize_text_field( $args['summary'] );
 		$has_header            = '' !== $title || '' !== $summary;
 		$labelledby            = '' !== $title ? ' aria-labelledby="' . esc_attr( $heading_id ) . '"' : '';
-		$stats                 = is_wp_error( $data ) ? null : UCNature_INat_Observations_Cache::get_source_stats( $query_args );
-		$stats_title           = ! is_wp_error( $stats ) && ! empty( $stats['label'] ) ? $stats['label'] : __( 'iNaturalist', 'ucnature-inat-observations' );
+		$stats                 = is_wp_error( $data ) ? null : Nature_INat_Observations_Cache::get_source_stats( $query_args );
+		$stats_title           = ! is_wp_error( $stats ) && ! empty( $stats['label'] ) ? $stats['label'] : __( 'iNaturalist', 'nature-inat-observations' );
 		$open_links_in_new_tab = ! in_array( $args['open_links'], array( false, 0, '0', 'false', 'no', 'off' ), true );
 		$section_context       = $use_interactivity_api ? wp_interactivity_data_wp_context(
 			array(
 				'isLoading' => false,
 			),
-			'ucnature-inat/observations'
+			'nature-inat/observations'
 		) : '';
 
 		ob_start();
 		?>
-		<section class="ucnature-inat"<?php echo $labelledby; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php echo $use_interactivity_api ? ' data-wp-interactive="ucnature-inat/observations" ' . $section_context . ' data-wp-bind--aria-busy="state.isPaginationLoading" data-wp-class--is-loading="state.isPaginationLoading"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+		<section class="nature-inat"<?php echo $labelledby; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?><?php echo $use_interactivity_api ? ' data-wp-interactive="nature-inat/observations" ' . $section_context . ' data-wp-bind--aria-busy="state.isPaginationLoading" data-wp-class--is-loading="state.isPaginationLoading"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 			<?php if ( $has_header ) : ?>
-				<div class="ucnature-inat__header">
+				<div class="nature-inat__header">
 					<?php if ( '' !== $title ) : ?>
-						<h2 id="<?php echo esc_attr( $heading_id ); ?>" class="ucnature-inat__title"><?php echo esc_html( $title ); ?></h2>
+						<h2 id="<?php echo esc_attr( $heading_id ); ?>" class="nature-inat__title"><?php echo esc_html( $title ); ?></h2>
 					<?php endif; ?>
 					<?php if ( '' !== $summary ) : ?>
-						<p class="ucnature-inat__summary"><?php echo esc_html( $summary ); ?></p>
+						<p class="nature-inat__summary"><?php echo esc_html( $summary ); ?></p>
 					<?php endif; ?>
 				</div>
 			<?php endif; ?>
 			<?php if ( is_wp_error( $data ) ) : ?>
-				<p class="ucnature-inat__notice"><?php echo esc_html( $data->get_error_message() ); ?></p>
+				<p class="nature-inat__notice"><?php echo esc_html( $data->get_error_message() ); ?></p>
 			<?php elseif ( empty( $data['results'] ) ) : ?>
-				<p class="ucnature-inat__notice"><?php esc_html_e( 'No observations found for this filter.', 'ucnature-inat-observations' ); ?></p>
+				<p class="nature-inat__notice"><?php esc_html_e( 'No observations found for this filter.', 'nature-inat-observations' ); ?></p>
 			<?php else : ?>
-				<?php $this->render_stats_cards( UCNature_INat_Observations_Cache::displayed_stats( $data ), $stats, $stats_title, $open_links_in_new_tab ); ?>
+				<?php $this->render_stats_cards( Nature_INat_Observations_Cache::displayed_stats( $data ), $stats, $stats_title, $open_links_in_new_tab ); ?>
 				<?php $this->render_filters( $group ); ?>
-				<div class="ucnature-inat__grid">
+				<div class="nature-inat__grid">
 					<?php foreach ( $data['results'] as $observation ) : ?>
-						<?php include UCNATURE_INAT_PATH . 'templates/observation-card.php'; ?>
+						<?php include NATURE_INAT_PATH . 'templates/observation-card.php'; ?>
 					<?php endforeach; ?>
 				</div>
 				<?php $this->render_pagination( $data ); ?>
@@ -533,39 +533,39 @@ final class UCNature_INat_Observations_Renderer {
 	 */
 	private function render_stats_cards( $displayed_stats, $source_stats, $title, $open_links_in_new_tab ) {
 		?>
-		<div class="ucnature-inat-stats" aria-label="<?php esc_attr_e( 'iNaturalist observation summary', 'ucnature-inat-observations' ); ?>">
-			<div class="ucnature-inat-stats__card">
-				<p class="ucnature-inat-stats__eyebrow"><?php esc_html_e( 'Showing on this page', 'ucnature-inat-observations' ); ?></p>
-				<div class="ucnature-inat-stats__metrics">
-					<?php $this->render_stat_metric( $displayed_stats['observations'], __( 'Observations', 'ucnature-inat-observations' ) ); ?>
-					<?php $this->render_stat_metric( $displayed_stats['species'], __( 'Species', 'ucnature-inat-observations' ) ); ?>
-					<?php $this->render_stat_metric( $displayed_stats['observers'], __( 'Observers', 'ucnature-inat-observations' ) ); ?>
+		<div class="nature-inat-stats" aria-label="<?php esc_attr_e( 'iNaturalist observation summary', 'nature-inat-observations' ); ?>">
+			<div class="nature-inat-stats__card">
+				<p class="nature-inat-stats__eyebrow"><?php esc_html_e( 'Showing on this page', 'nature-inat-observations' ); ?></p>
+				<div class="nature-inat-stats__metrics">
+					<?php $this->render_stat_metric( $displayed_stats['observations'], __( 'Observations', 'nature-inat-observations' ) ); ?>
+					<?php $this->render_stat_metric( $displayed_stats['species'], __( 'Species', 'nature-inat-observations' ) ); ?>
+					<?php $this->render_stat_metric( $displayed_stats['observers'], __( 'Observers', 'nature-inat-observations' ) ); ?>
 				</div>
 			</div>
 
 			<?php if ( ! is_wp_error( $source_stats ) && is_array( $source_stats ) ) : ?>
-				<div class="ucnature-inat-stats__card ucnature-inat-stats__card--source">
-					<p class="ucnature-inat-stats__eyebrow">
+				<div class="nature-inat-stats__card nature-inat-stats__card--source">
+					<p class="nature-inat-stats__eyebrow">
 						<?php
 						printf(
 							/* translators: %s: iNaturalist source title. */
-							esc_html__( '%s - All time', 'ucnature-inat-observations' ),
+							esc_html__( '%s - All time', 'nature-inat-observations' ),
 							esc_html( $title )
 						);
 						?>
 					</p>
-					<div class="ucnature-inat-stats__metrics">
-						<?php $this->render_stat_metric( $source_stats['observations'], __( 'Observations', 'ucnature-inat-observations' ) ); ?>
-						<?php $this->render_stat_metric( $source_stats['species'], __( 'Species', 'ucnature-inat-observations' ) ); ?>
-						<?php $this->render_stat_metric( $source_stats['identifiers'], __( 'Identifiers', 'ucnature-inat-observations' ) ); ?>
-						<?php $this->render_stat_metric( $source_stats['observers'], __( 'Observers', 'ucnature-inat-observations' ) ); ?>
+					<div class="nature-inat-stats__metrics">
+						<?php $this->render_stat_metric( $source_stats['observations'], __( 'Observations', 'nature-inat-observations' ) ); ?>
+						<?php $this->render_stat_metric( $source_stats['species'], __( 'Species', 'nature-inat-observations' ) ); ?>
+						<?php $this->render_stat_metric( $source_stats['identifiers'], __( 'Identifiers', 'nature-inat-observations' ) ); ?>
+						<?php $this->render_stat_metric( $source_stats['observers'], __( 'Observers', 'nature-inat-observations' ) ); ?>
 					</div>
 					<?php if ( ! empty( $source_stats['url'] ) ) : ?>
-						<a class="ucnature-inat-stats__link" href="<?php echo esc_url( $source_stats['url'] ); ?>"<?php echo $open_links_in_new_tab ? ' target="_blank" rel="noopener noreferrer"' : ''; ?>>
-							<?php esc_html_e( 'View full project on iNaturalist', 'ucnature-inat-observations' ); ?>
+						<a class="nature-inat-stats__link" href="<?php echo esc_url( $source_stats['url'] ); ?>"<?php echo $open_links_in_new_tab ? ' target="_blank" rel="noopener noreferrer"' : ''; ?>>
+							<?php esc_html_e( 'View full project on iNaturalist', 'nature-inat-observations' ); ?>
 							<span aria-hidden="true">→</span>
 							<?php if ( $open_links_in_new_tab ) : ?>
-								<span class="screen-reader-text"> <?php esc_html_e( 'opens in a new tab', 'ucnature-inat-observations' ); ?></span>
+								<span class="screen-reader-text"> <?php esc_html_e( 'opens in a new tab', 'nature-inat-observations' ); ?></span>
 							<?php endif; ?>
 						</a>
 					<?php endif; ?>
@@ -583,7 +583,7 @@ final class UCNature_INat_Observations_Renderer {
 	 */
 	private function render_stat_metric( $value, $label ) {
 		?>
-		<div class="ucnature-inat-stats__metric">
+		<div class="nature-inat-stats__metric">
 			<strong><?php echo esc_html( number_format_i18n( absint( $value ) ) ); ?></strong>
 			<span><?php echo esc_html( $label ); ?></span>
 		</div>
@@ -643,47 +643,47 @@ final class UCNature_INat_Observations_Renderer {
 			? ' data-wp-on--mouseenter="actions.prefetchPaginationPage" data-wp-on--focus="actions.prefetchPaginationPage" data-wp-on--click="actions.setPaginationLoading"'
 			: '';
 		?>
-		<nav class="ucnature-inat-pagination" aria-label="<?php esc_attr_e( 'Observations pagination', 'ucnature-inat-observations' ); ?>">
-			<p class="ucnature-inat-pagination__summary">
+		<nav class="nature-inat-pagination" aria-label="<?php esc_attr_e( 'Observations pagination', 'nature-inat-observations' ); ?>">
+			<p class="nature-inat-pagination__summary">
 				<?php
 				printf(
 					/* translators: 1: current page, 2: total pages, 3: total observations. */
-					esc_html__( 'Page %1$s of %2$s (%3$s observations)', 'ucnature-inat-observations' ),
+					esc_html__( 'Page %1$s of %2$s (%3$s observations)', 'nature-inat-observations' ),
 					esc_html( number_format_i18n( $current_page ) ),
 					esc_html( number_format_i18n( $total_pages ) ),
 					esc_html( number_format_i18n( $total_results ) )
 				);
 				?>
 			</p>
-			<div class="ucnature-inat-pagination__links">
+			<div class="nature-inat-pagination__links">
 				<?php if ( $current_page > 1 ) : ?>
-					<a class="ucnature-inat-pagination__link" href="<?php echo esc_url( $this->pagination_url( $current_page - 1 ) ); ?>"<?php echo $link_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>><?php esc_html_e( 'Previous', 'ucnature-inat-observations' ); ?></a>
+					<a class="nature-inat-pagination__link" href="<?php echo esc_url( $this->pagination_url( $current_page - 1 ) ); ?>"<?php echo $link_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>><?php esc_html_e( 'Previous', 'nature-inat-observations' ); ?></a>
 				<?php endif; ?>
 
 				<?php if ( $start > 1 ) : ?>
-					<a class="ucnature-inat-pagination__link" href="<?php echo esc_url( $this->pagination_url( 1 ) ); ?>"<?php echo $link_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>1</a>
+					<a class="nature-inat-pagination__link" href="<?php echo esc_url( $this->pagination_url( 1 ) ); ?>"<?php echo $link_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>1</a>
 					<?php if ( $start > 2 ) : ?>
-						<span class="ucnature-inat-pagination__ellipsis" aria-hidden="true">...</span>
+						<span class="nature-inat-pagination__ellipsis" aria-hidden="true">...</span>
 					<?php endif; ?>
 				<?php endif; ?>
 
 				<?php for ( $page = $start; $page <= $end; $page++ ) : ?>
 					<?php if ( $page === $current_page ) : ?>
-						<span class="ucnature-inat-pagination__link is-current" aria-current="page"><?php echo esc_html( number_format_i18n( $page ) ); ?></span>
+						<span class="nature-inat-pagination__link is-current" aria-current="page"><?php echo esc_html( number_format_i18n( $page ) ); ?></span>
 					<?php else : ?>
-						<a class="ucnature-inat-pagination__link" href="<?php echo esc_url( $this->pagination_url( $page ) ); ?>"<?php echo $link_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>><?php echo esc_html( number_format_i18n( $page ) ); ?></a>
+						<a class="nature-inat-pagination__link" href="<?php echo esc_url( $this->pagination_url( $page ) ); ?>"<?php echo $link_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>><?php echo esc_html( number_format_i18n( $page ) ); ?></a>
 					<?php endif; ?>
 				<?php endfor; ?>
 
 				<?php if ( $end < $total_pages ) : ?>
 					<?php if ( $end < $total_pages - 1 ) : ?>
-						<span class="ucnature-inat-pagination__ellipsis" aria-hidden="true">...</span>
+						<span class="nature-inat-pagination__ellipsis" aria-hidden="true">...</span>
 					<?php endif; ?>
-					<a class="ucnature-inat-pagination__link" href="<?php echo esc_url( $this->pagination_url( $total_pages ) ); ?>"<?php echo $link_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>><?php echo esc_html( number_format_i18n( $total_pages ) ); ?></a>
+					<a class="nature-inat-pagination__link" href="<?php echo esc_url( $this->pagination_url( $total_pages ) ); ?>"<?php echo $link_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>><?php echo esc_html( number_format_i18n( $total_pages ) ); ?></a>
 				<?php endif; ?>
 
 				<?php if ( $current_page < $total_pages ) : ?>
-					<a class="ucnature-inat-pagination__link" href="<?php echo esc_url( $this->pagination_url( $current_page + 1 ) ); ?>"<?php echo $link_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>><?php esc_html_e( 'Next', 'ucnature-inat-observations' ); ?></a>
+					<a class="nature-inat-pagination__link" href="<?php echo esc_url( $this->pagination_url( $current_page + 1 ) ); ?>"<?php echo $link_attrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>><?php esc_html_e( 'Next', 'nature-inat-observations' ); ?></a>
 				<?php endif; ?>
 			</div>
 		</nav>
@@ -698,10 +698,10 @@ final class UCNature_INat_Observations_Renderer {
 	 */
 	private function pagination_url( $page ) {
 		if ( $page <= 1 ) {
-			return remove_query_arg( 'ucnature_inat_page' );
+			return remove_query_arg( 'nature_inat_page' );
 		}
 
-		return add_query_arg( 'ucnature_inat_page', absint( $page ) );
+		return add_query_arg( 'nature_inat_page', absint( $page ) );
 	}
 
 	/**
@@ -711,15 +711,15 @@ final class UCNature_INat_Observations_Renderer {
 	 */
 	private function render_filters( $active_group ) {
 		?>
-		<nav class="ucnature-inat__filters" aria-label="<?php esc_attr_e( 'Observation filters', 'ucnature-inat-observations' ); ?>">
-			<?php foreach ( UCNature_INat_Observations_Cache::group_options() as $group => $label ) : ?>
+		<nav class="nature-inat__filters" aria-label="<?php esc_attr_e( 'Observation filters', 'nature-inat-observations' ); ?>">
+			<?php foreach ( Nature_INat_Observations_Cache::group_options() as $group => $label ) : ?>
 				<?php
-				$url = remove_query_arg( array( 'ucnature_inat_group', 'ucnature_inat_page' ) );
+				$url = remove_query_arg( array( 'nature_inat_group', 'nature_inat_page' ) );
 				if ( '' !== $group ) {
-					$url = add_query_arg( 'ucnature_inat_group', $group, $url );
+					$url = add_query_arg( 'nature_inat_group', $group, $url );
 				}
 				?>
-				<a class="ucnature-inat__filter<?php echo $group === $active_group ? ' is-active' : ''; ?>" href="<?php echo esc_url( $url ); ?>"<?php echo $group === $active_group ? ' aria-current="page"' : ''; ?>>
+				<a class="nature-inat__filter<?php echo $group === $active_group ? ' is-active' : ''; ?>" href="<?php echo esc_url( $url ); ?>"<?php echo $group === $active_group ? ' aria-current="page"' : ''; ?>>
 					<?php echo esc_html( $label ); ?>
 				</a>
 			<?php endforeach; ?>

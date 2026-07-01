@@ -1,4 +1,4 @@
-=== UC Nature iNaturalist Observations ===
+=== Nature iNaturalist Observations ===
 Contributors: lwangdu
 Tags: inaturalist, observations, biodiversity, maps, block
 Requires at least: 6.5
@@ -12,7 +12,7 @@ Display cached iNaturalist observations in WordPress with block editor support, 
 
 == Description ==
 
-UC Nature iNaturalist Observations displays iNaturalist observations on WordPress sites. It provides dynamic blocks for an observation grid and a compact observation map, plus shortcode support for older pages.
+Nature iNaturalist Observations displays iNaturalist observations on WordPress sites. It provides dynamic blocks for an observation grid and a compact observation map, plus shortcode support for older pages.
 
 Features include:
 
@@ -27,7 +27,7 @@ Features include:
 * Map view with reserve boundary and recent observation thumbnails.
 * Optional setting for opening iNaturalist links in a new tab.
 * Admin cache clearing.
-* Shortcode support via [ucnature_inat_observations] and [ucnature_inat_observations_map].
+* Shortcode support via [nature_inat_observations] and [nature_inat_observations_map].
 
 = Third-party services =
 
@@ -61,7 +61,7 @@ The plugin caches API responses in WordPress transients to reduce page-load time
 
 = Can I use a shortcode instead of blocks? =
 
-Yes. Use [ucnature_inat_observations] for the grid view or [ucnature_inat_observations_map] for the map view.
+Yes. Use [nature_inat_observations] for the grid view or [nature_inat_observations_map] for the map view.
 
 == Screenshots ==
 
