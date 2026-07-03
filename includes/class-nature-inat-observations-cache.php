@@ -17,6 +17,8 @@ final class Nature_INat_Observations_Cache {
 	const PROJECTS_API_BASE = 'https://api.inaturalist.org/v1/projects';
 	const PLACES_API_BASE   = 'https://api.inaturalist.org/v1/places';
 	const MAX_PER_PAGE      = 200;
+	const MAX_MAP_MARKERS   = 1000;
+	const LOCK_TTL          = 60;
 
 	/**
 	 * Get available observation group filters.
@@ -77,68 +79,43 @@ final class Nature_INat_Observations_Cache {
 		}
 
 		$cache_key = 'nature_inat_v4_' . md5( wp_json_encode( $args ) );
-		$cached    = get_transient( $cache_key );
 
-		if ( false !== $cached ) {
-			return $cached;
-		}
+		return self::cached_result(
+			$cache_key,
+			absint( $options['cache_ttl'] ),
+			function () use ( $args ) {
+				$query = array_merge(
+					self::source_query_args( $args ),
+					array(
+						'per_page' => $args['per_page'],
+						'page'     => $args['page'],
+						'photos'   => 'true',
+						'order'    => 'desc',
+						'order_by' => 'observed_on',
+					)
+				);
 
-		$query = array_merge(
-			self::source_query_args( $args ),
-			array(
-				'per_page' => $args['per_page'],
-				'page'     => $args['page'],
-				'photos'   => 'true',
-				'order'    => 'desc',
-				'order_by' => 'observed_on',
-			)
+				if ( ! empty( $args['geo'] ) ) {
+					$query['geo'] = 'true';
+				}
+
+				$data = self::request_json( add_query_arg( $query, self::API_BASE ) );
+				if ( is_wp_error( $data ) ) {
+					return $data;
+				}
+
+				if ( ! isset( $data['results'] ) || ! is_array( $data['results'] ) ) {
+					return new WP_Error( 'nature_inat_bad_response', __( 'The iNaturalist response was not readable.', 'nature-inat-observations' ) );
+				}
+
+				return array(
+					'total_results' => absint( $data['total_results'] ?? 0 ),
+					'page'          => absint( $data['page'] ?? $args['page'] ),
+					'per_page'      => absint( $data['per_page'] ?? $args['per_page'] ),
+					'results'       => array_map( array( __CLASS__, 'normalize_observation' ), $data['results'] ),
+				);
+			}
 		);
-
-		if ( ! empty( $args['geo'] ) ) {
-			$query['geo'] = 'true';
-		}
-
-		$url      = add_query_arg( $query, self::API_BASE );
-		$response = wp_remote_get(
-			$url,
-			array(
-				'timeout'     => 12,
-				'redirection' => 2,
-				'user-agent'  => 'Nature iNaturalist Observations/' . NATURE_INAT_VERSION . '; ' . home_url( '/' ),
-			)
-		);
-
-		if ( is_wp_error( $response ) ) {
-			return $response;
-		}
-
-		$status = wp_remote_retrieve_response_code( $response );
-		if ( 200 !== $status ) {
-			return new WP_Error(
-				'nature_inat_api_error',
-				sprintf(
-					/* translators: %d: HTTP status code. */
-					__( 'iNaturalist returned HTTP %d.', 'nature-inat-observations' ),
-					$status
-				)
-			);
-		}
-
-		$data = json_decode( wp_remote_retrieve_body( $response ), true );
-		if ( ! is_array( $data ) || ! isset( $data['results'] ) || ! is_array( $data['results'] ) ) {
-			return new WP_Error( 'nature_inat_bad_response', __( 'The iNaturalist response was not readable.', 'nature-inat-observations' ) );
-		}
-
-		$result = array(
-			'total_results' => absint( $data['total_results'] ?? 0 ),
-			'page'          => absint( $data['page'] ?? $args['page'] ),
-			'per_page'      => absint( $data['per_page'] ?? $args['per_page'] ),
-			'results'       => array_map( array( __CLASS__, 'normalize_observation' ), $data['results'] ),
-		);
-
-		set_transient( $cache_key, $result, absint( $options['cache_ttl'] ) );
-
-		return $result;
 	}
 
 	/**
@@ -157,57 +134,48 @@ final class Nature_INat_Observations_Cache {
 		}
 
 		$cache_key = 'nature_inat_stats_v2_' . md5( wp_json_encode( $args ) );
-		$cached    = get_transient( $cache_key );
 
-		if ( false !== $cached ) {
-			if ( ! is_array( $cached ) ) {
+		return self::cached_result(
+			$cache_key,
+			absint( $options['cache_ttl'] ),
+			function () use ( $args ) {
+				$query = array_merge(
+					self::source_query_args( $args ),
+					array(
+						'per_page' => 0,
+					)
+				);
+
+				$observations = self::request_count( self::API_BASE, $query );
+				if ( is_wp_error( $observations ) ) {
+					return $observations;
+				}
+
+				$species = self::request_count( self::API_BASE . '/species_counts', $query );
+				if ( is_wp_error( $species ) ) {
+					return $species;
+				}
+
+				$identifiers = self::request_count( self::API_BASE . '/identifiers', $query );
+				if ( is_wp_error( $identifiers ) ) {
+					return $identifiers;
+				}
+
+				$observers = self::request_count( self::API_BASE . '/observers', $query );
+				if ( is_wp_error( $observers ) ) {
+					return $observers;
+				}
+
 				return array(
-					'id' => absint( $cached ),
+					'observations' => $observations,
+					'species'      => $species,
+					'identifiers'  => $identifiers,
+					'observers'    => $observers,
+					'url'          => self::inat_url( $args ),
+					'label'        => self::source_label( $args ),
 				);
 			}
-
-			return $cached;
-		}
-
-		$query = array_merge(
-			self::source_query_args( $args ),
-			array(
-				'per_page' => 0,
-			)
 		);
-
-		$observations = self::request_count( self::API_BASE, $query );
-		if ( is_wp_error( $observations ) ) {
-			return $observations;
-		}
-
-		$species = self::request_count( self::API_BASE . '/species_counts', $query );
-		if ( is_wp_error( $species ) ) {
-			return $species;
-		}
-
-		$identifiers = self::request_count( self::API_BASE . '/identifiers', $query );
-		if ( is_wp_error( $identifiers ) ) {
-			return $identifiers;
-		}
-
-		$observers = self::request_count( self::API_BASE . '/observers', $query );
-		if ( is_wp_error( $observers ) ) {
-			return $observers;
-		}
-
-		$result = array(
-			'observations' => $observations,
-			'species'      => $species,
-			'identifiers'  => $identifiers,
-			'observers'    => $observers,
-			'url'          => self::inat_url( $args ),
-			'label'        => self::source_label( $args ),
-		);
-
-		set_transient( $cache_key, $result, absint( $options['cache_ttl'] ) );
-
-		return $result;
 	}
 
 	/**
@@ -225,44 +193,41 @@ final class Nature_INat_Observations_Cache {
 		}
 
 		$cache_key = 'nature_inat_boundary_v1_' . md5( wp_json_encode( $args ) );
-		$cached    = get_transient( $cache_key );
 
-		if ( false !== $cached ) {
-			return $cached;
-		}
+		return self::cached_result(
+			$cache_key,
+			DAY_IN_SECONDS,
+			function () use ( $args ) {
+				$place_id = self::boundary_place_id( $args );
+				if ( is_wp_error( $place_id ) ) {
+					return $place_id;
+				}
 
-		$place_id = self::boundary_place_id( $args );
-		if ( is_wp_error( $place_id ) ) {
-			return $place_id;
-		}
+				if ( ! $place_id ) {
+					return new WP_Error( 'nature_inat_boundary_missing', __( 'No iNaturalist place boundary was found for this source.', 'nature-inat-observations' ) );
+				}
 
-		if ( ! $place_id ) {
-			return new WP_Error( 'nature_inat_boundary_missing', __( 'No iNaturalist place boundary was found for this source.', 'nature-inat-observations' ) );
-		}
+				$place = self::place_from_id( $place_id );
+				if ( is_wp_error( $place ) ) {
+					return $place;
+				}
 
-		$place = self::place_from_id( $place_id );
-		if ( is_wp_error( $place ) ) {
-			return $place;
-		}
+				$geometry = $place['geometry_geojson'] ?? array();
+				if ( empty( $geometry ) || ! is_array( $geometry ) ) {
+					$geometry = $place['bounding_box_geojson'] ?? array();
+				}
 
-		$geometry = $place['geometry_geojson'] ?? array();
-		if ( empty( $geometry ) || ! is_array( $geometry ) ) {
-			$geometry = $place['bounding_box_geojson'] ?? array();
-		}
+				if ( empty( $geometry ) || ! is_array( $geometry ) ) {
+					return new WP_Error( 'nature_inat_boundary_unavailable', __( 'The iNaturalist place boundary was not available.', 'nature-inat-observations' ) );
+				}
 
-		if ( empty( $geometry ) || ! is_array( $geometry ) ) {
-			return new WP_Error( 'nature_inat_boundary_unavailable', __( 'The iNaturalist place boundary was not available.', 'nature-inat-observations' ) );
-		}
-
-		$result = array(
-			'place_id' => absint( $place_id ),
-			'label'    => sanitize_text_field( $place['display_name'] ?? $place['name'] ?? '' ),
-			'geometry' => $geometry,
+				return array(
+					'place_id' => absint( $place_id ),
+					'label'    => sanitize_text_field( $place['display_name'] ?? $place['name'] ?? '' ),
+					'geometry' => $geometry,
+				);
+			}
 		);
-
-		set_transient( $cache_key, $result, DAY_IN_SECONDS );
-
-		return $result;
 	}
 
 	/**
@@ -281,6 +246,49 @@ final class Nature_INat_Observations_Cache {
 		);
 
 		return false === $deleted ? 0 : absint( $deleted );
+	}
+
+	/**
+	 * Warm the default source caches in the background.
+	 */
+	public static function warm_default_cache() {
+		$options = Nature_INat_Observations_Admin::get_options();
+		$args    = array(
+			'project_id'   => $options['project_id'],
+			'project_slug' => $options['project_slug'],
+			'place_id'     => 0,
+			'user_id'      => '',
+			'per_page'     => $options['per_page'],
+			'page'         => 1,
+			'group'        => '',
+		);
+
+		self::get_source_stats( $args );
+		self::get_source_boundary( $args );
+		self::get_observations( $args );
+
+		$map_args             = $args;
+		$map_args['geo']      = true;
+		$map_args['per_page'] = self::MAX_PER_PAGE;
+
+		$first_page = self::get_observations( $map_args );
+		if ( is_wp_error( $first_page ) ) {
+			return;
+		}
+
+		$total_results = absint( $first_page['total_results'] ?? 0 );
+		$per_page      = max( 1, absint( $first_page['per_page'] ?? self::MAX_PER_PAGE ) );
+		$max_results   = min( self::MAX_MAP_MARKERS, $total_results );
+		$max_pages     = (int) ceil( $max_results / $per_page );
+
+		for ( $page = 2; $page <= $max_pages; $page++ ) {
+			$map_args['page'] = $page;
+			$page_data        = self::get_observations( $map_args );
+
+			if ( is_wp_error( $page_data ) ) {
+				return;
+			}
+		}
 	}
 
 	/**
@@ -445,28 +453,27 @@ final class Nature_INat_Observations_Cache {
 	 */
 	private static function project_from_slug( $project_slug ) {
 		$cache_key = 'nature_inat_project_slug_' . md5( $project_slug );
-		$cached    = get_transient( $cache_key );
 
-		if ( false !== $cached ) {
-			return $cached;
-		}
+		return self::cached_result(
+			$cache_key,
+			DAY_IN_SECONDS,
+			function () use ( $project_slug ) {
+				$data = self::request_json( trailingslashit( self::PROJECTS_API_BASE ) . rawurlencode( $project_slug ) );
+				if ( is_wp_error( $data ) ) {
+					return $data;
+				}
 
-		$data = self::request_json( trailingslashit( self::PROJECTS_API_BASE ) . rawurlencode( $project_slug ) );
-		if ( is_wp_error( $data ) ) {
-			return $data;
-		}
+				$project = $data['results'][0] ?? array();
+				if ( empty( $project['id'] ) ) {
+					return new WP_Error(
+						'nature_inat_project_not_found',
+						__( 'The iNaturalist project slug was not found.', 'nature-inat-observations' )
+					);
+				}
 
-		$project = $data['results'][0] ?? array();
-		if ( empty( $project['id'] ) ) {
-			return new WP_Error(
-				'nature_inat_project_not_found',
-				__( 'The iNaturalist project slug was not found.', 'nature-inat-observations' )
-			);
-		}
-
-		set_transient( $cache_key, $project, DAY_IN_SECONDS );
-
-		return $project;
+				return $project;
+			}
+		);
 	}
 
 	/**
@@ -477,28 +484,27 @@ final class Nature_INat_Observations_Cache {
 	 */
 	private static function project_from_id( $project_id ) {
 		$cache_key = 'nature_inat_project_id_' . absint( $project_id );
-		$cached    = get_transient( $cache_key );
 
-		if ( false !== $cached ) {
-			return $cached;
-		}
+		return self::cached_result(
+			$cache_key,
+			DAY_IN_SECONDS,
+			function () use ( $project_id ) {
+				$data = self::request_json( trailingslashit( self::PROJECTS_API_BASE ) . absint( $project_id ) );
+				if ( is_wp_error( $data ) ) {
+					return $data;
+				}
 
-		$data = self::request_json( trailingslashit( self::PROJECTS_API_BASE ) . absint( $project_id ) );
-		if ( is_wp_error( $data ) ) {
-			return $data;
-		}
+				$project = $data['results'][0] ?? array();
+				if ( empty( $project['id'] ) ) {
+					return new WP_Error(
+						'nature_inat_project_not_found',
+						__( 'The iNaturalist project was not found.', 'nature-inat-observations' )
+					);
+				}
 
-		$project = $data['results'][0] ?? array();
-		if ( empty( $project['id'] ) ) {
-			return new WP_Error(
-				'nature_inat_project_not_found',
-				__( 'The iNaturalist project was not found.', 'nature-inat-observations' )
-			);
-		}
-
-		set_transient( $cache_key, $project, DAY_IN_SECONDS );
-
-		return $project;
+				return $project;
+			}
+		);
 	}
 
 	/**
@@ -509,28 +515,27 @@ final class Nature_INat_Observations_Cache {
 	 */
 	private static function place_from_id( $place_id ) {
 		$cache_key = 'nature_inat_place_' . absint( $place_id );
-		$cached    = get_transient( $cache_key );
 
-		if ( false !== $cached ) {
-			return $cached;
-		}
+		return self::cached_result(
+			$cache_key,
+			DAY_IN_SECONDS,
+			function () use ( $place_id ) {
+				$data = self::request_json( trailingslashit( self::PLACES_API_BASE ) . absint( $place_id ) );
+				if ( is_wp_error( $data ) ) {
+					return $data;
+				}
 
-		$data = self::request_json( trailingslashit( self::PLACES_API_BASE ) . absint( $place_id ) );
-		if ( is_wp_error( $data ) ) {
-			return $data;
-		}
+				$place = $data['results'][0] ?? array();
+				if ( empty( $place['id'] ) ) {
+					return new WP_Error(
+						'nature_inat_place_not_found',
+						__( 'The iNaturalist place was not found.', 'nature-inat-observations' )
+					);
+				}
 
-		$place = $data['results'][0] ?? array();
-		if ( empty( $place['id'] ) ) {
-			return new WP_Error(
-				'nature_inat_place_not_found',
-				__( 'The iNaturalist place was not found.', 'nature-inat-observations' )
-			);
-		}
-
-		set_transient( $cache_key, $place, DAY_IN_SECONDS );
-
-		return $place;
+				return $place;
+			}
+		);
 	}
 
 	/**
@@ -542,10 +547,6 @@ final class Nature_INat_Observations_Cache {
 	private static function boundary_place_id( $args ) {
 		if ( ! empty( $args['place_id'] ) ) {
 			return absint( $args['place_id'] );
-		}
-
-		if ( 'stunt-ranch-santa-monica-mountains-reserve' === $args['project_slug'] || 3234 === absint( $args['project_id'] ) ) {
-			return 4169;
 		}
 
 		if ( '' !== $args['project_slug'] ) {
@@ -572,6 +573,70 @@ final class Nature_INat_Observations_Cache {
 		}
 
 		return 0;
+	}
+
+	/**
+	 * Return a cached value or build it behind a short-lived lock.
+	 *
+	 * @param string   $cache_key Cache key.
+	 * @param int      $ttl       Cache lifetime in seconds.
+	 * @param callable $callback  Cache builder.
+	 * @return mixed|WP_Error
+	 */
+	private static function cached_result( $cache_key, $ttl, $callback ) {
+		$cached = get_transient( $cache_key );
+
+		if ( false !== $cached ) {
+			return $cached;
+		}
+
+		$lock_key = self::acquire_cache_lock( $cache_key );
+		if ( is_wp_error( $lock_key ) ) {
+			if ( 'nature_inat_cache_filled' === $lock_key->get_error_code() ) {
+				return $lock_key->get_error_data();
+			}
+
+			return $lock_key;
+		}
+
+		try {
+			$result = call_user_func( $callback );
+
+			if ( ! is_wp_error( $result ) ) {
+				set_transient( $cache_key, $result, $ttl );
+			}
+
+			return $result;
+		} finally {
+			delete_transient( $lock_key );
+		}
+	}
+
+	/**
+	 * Acquire a cache refresh lock, waiting briefly for another request to finish.
+	 *
+	 * @param string $cache_key Cache key.
+	 * @return string|WP_Error
+	 */
+	private static function acquire_cache_lock( $cache_key ) {
+		$lock_key = 'nature_inat_lock_' . md5( $cache_key );
+
+		for ( $attempt = 0; $attempt < 3; $attempt++ ) {
+			if ( false === get_transient( $lock_key ) ) {
+				set_transient( $lock_key, 1, self::LOCK_TTL );
+
+				return $lock_key;
+			}
+
+			usleep( 250000 );
+
+			$cached = get_transient( $cache_key );
+			if ( false !== $cached ) {
+				return new WP_Error( 'nature_inat_cache_filled', '', $cached );
+			}
+		}
+
+		return new WP_Error( 'nature_inat_cache_busy', __( 'The iNaturalist cache is refreshing. Please try again shortly.', 'nature-inat-observations' ) );
 	}
 
 	/**
@@ -734,23 +799,22 @@ final class Nature_INat_Observations_Cache {
 	 */
 	private static function entity_label( $url, $field ) {
 		$cache_key = 'nature_inat_label_' . md5( $url . '|' . $field );
-		$cached    = get_transient( $cache_key );
+		$label     = self::cached_result(
+			$cache_key,
+			DAY_IN_SECONDS,
+			function () use ( $url, $field ) {
+				$data = self::request_json( $url );
+				if ( is_wp_error( $data ) ) {
+					return '';
+				}
 
-		if ( false !== $cached ) {
-			return $cached;
-		}
+				$entity = $data['results'][0] ?? $data;
 
-		$data = self::request_json( $url );
-		if ( is_wp_error( $data ) ) {
-			return '';
-		}
+				return sanitize_text_field( $entity[ $field ] ?? $entity['name'] ?? $entity['title'] ?? '' );
+			}
+		);
 
-		$entity = $data['results'][0] ?? $data;
-		$label  = sanitize_text_field( $entity[ $field ] ?? $entity['name'] ?? $entity['title'] ?? '' );
-
-		set_transient( $cache_key, $label, DAY_IN_SECONDS );
-
-		return $label;
+		return is_wp_error( $label ) ? '' : $label;
 	}
 
 	/**

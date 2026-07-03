@@ -38,5 +38,6 @@ final class Nature_INat_Observations_Plugin {
 	private function __construct() {
 		new Nature_INat_Observations_Admin();
 		new Nature_INat_Observations_Renderer();
+		add_action( 'nature_inat_observations_warm_cache', array( 'Nature_INat_Observations_Cache', 'warm_default_cache' ) );
 	}
 }

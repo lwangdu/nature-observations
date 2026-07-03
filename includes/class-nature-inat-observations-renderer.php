@@ -361,7 +361,7 @@ final class Nature_INat_Observations_Renderer {
 			'group'        => $group,
 			'geo'          => true,
 		);
-		$data       = Nature_INat_Observations_Cache::get_observations( $query_args );
+		$data       = $this->get_map_observation_data( $query_args );
 		$boundary   = Nature_INat_Observations_Cache::get_source_boundary( $query_args );
 
 		$heading_id            = wp_unique_id( 'nature-inat-map-heading-' );
@@ -588,6 +588,50 @@ final class Nature_INat_Observations_Renderer {
 			<span><?php echo esc_html( $label ); ?></span>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Get enough georeferenced observations to make the map match the iNaturalist map view more closely.
+	 *
+	 * @param array $query_args Query arguments.
+	 * @return array|WP_Error
+	 */
+	private function get_map_observation_data( $query_args ) {
+		$map_args             = $query_args;
+		$map_args['per_page'] = Nature_INat_Observations_Cache::MAX_PER_PAGE;
+		$map_args['page']     = 1;
+
+		$data = Nature_INat_Observations_Cache::get_observations( $map_args );
+		if ( is_wp_error( $data ) ) {
+			return $data;
+		}
+
+		$results       = $data['results'] ?? array();
+		$total_results = absint( $data['total_results'] ?? count( $results ) );
+		$per_page      = max( 1, absint( $data['per_page'] ?? Nature_INat_Observations_Cache::MAX_PER_PAGE ) );
+		$max_results   = min( Nature_INat_Observations_Cache::MAX_MAP_MARKERS, $total_results );
+		$max_pages     = (int) ceil( $max_results / $per_page );
+
+		for ( $page = 2; $page <= $max_pages; $page++ ) {
+			$map_args['page'] = $page;
+			$page_data        = Nature_INat_Observations_Cache::get_observations( $map_args );
+
+			if ( is_wp_error( $page_data ) ) {
+				break;
+			}
+
+			$results = array_merge( $results, $page_data['results'] ?? array() );
+
+			if ( count( $results ) >= Nature_INat_Observations_Cache::MAX_MAP_MARKERS ) {
+				break;
+			}
+		}
+
+		$data['results']  = array_slice( $results, 0, Nature_INat_Observations_Cache::MAX_MAP_MARKERS );
+		$data['page']     = 1;
+		$data['per_page'] = $per_page;
+
+		return $data;
 	}
 
 	/**

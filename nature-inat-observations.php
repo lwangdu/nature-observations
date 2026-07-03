@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Nature iNaturalist Observations
  * Description: Displays iNaturalist project observations in WordPress using cached API requests and a block editor interface.
- * Version: 0.2.1
+ * Version: 0.2.2
  * Requires at least: 6.5
  * Requires PHP: 7.4
  * Author: Lobsang Wangdu
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'NATURE_INAT_VERSION', '0.2.1' );
+define( 'NATURE_INAT_VERSION', '0.2.2' );
 define( 'NATURE_INAT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'NATURE_INAT_URL', plugin_dir_url( __FILE__ ) );
 define( 'NATURE_INAT_PAGE_OPTION', 'nature_inat_observations_page_id' );
@@ -37,6 +37,7 @@ add_action(
 );
 
 register_activation_hook( __FILE__, 'nature_inat_observations_activate' );
+register_deactivation_hook( __FILE__, 'nature_inat_observations_deactivate' );
 
 add_action( 'admin_init', 'nature_inat_observations_maybe_create_pages' );
 
@@ -45,19 +46,49 @@ add_action( 'admin_init', 'nature_inat_observations_maybe_create_pages' );
  */
 function nature_inat_observations_activate() {
 	nature_inat_observations_create_default_pages();
+	nature_inat_observations_schedule_cache_warmer();
 	update_option( NATURE_INAT_VERSION_OPTION, NATURE_INAT_VERSION );
+}
+
+/**
+ * Unschedule cache warming on deactivation.
+ */
+function nature_inat_observations_deactivate() {
+	nature_inat_observations_unschedule_cache_warmer();
 }
 
 /**
  * Create default pages after plugin updates for already-active installs.
  */
 function nature_inat_observations_maybe_create_pages() {
+	nature_inat_observations_schedule_cache_warmer();
+
 	if ( NATURE_INAT_VERSION === get_option( NATURE_INAT_VERSION_OPTION ) ) {
 		return;
 	}
 
 	nature_inat_observations_create_default_pages();
 	update_option( NATURE_INAT_VERSION_OPTION, NATURE_INAT_VERSION );
+}
+
+/**
+ * Schedule hourly background warming for default iNaturalist caches.
+ */
+function nature_inat_observations_schedule_cache_warmer() {
+	if ( ! wp_next_scheduled( 'nature_inat_observations_warm_cache' ) ) {
+		wp_schedule_event( time() + HOUR_IN_SECONDS, 'hourly', 'nature_inat_observations_warm_cache' );
+	}
+}
+
+/**
+ * Remove scheduled cache warming.
+ */
+function nature_inat_observations_unschedule_cache_warmer() {
+	$timestamp = wp_next_scheduled( 'nature_inat_observations_warm_cache' );
+
+	if ( $timestamp ) {
+		wp_unschedule_event( $timestamp, 'nature_inat_observations_warm_cache' );
+	}
 }
 
 /**

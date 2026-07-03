@@ -4,7 +4,7 @@ Tags: inaturalist, observations, biodiversity, maps, block
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.2.1
+Stable tag: 0.2.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -69,6 +69,11 @@ Yes. Use [nature_inat_observations] for the grid view or [nature_inat_observatio
 2. Observation map with reserve boundary, pins, and recent observation thumbnails.
 
 == Changelog ==
+
+= 0.2.2 =
+* Removed the hardcoded demo-project boundary override so all project boundaries use the generic iNaturalist lookup path.
+* Added background cache warming and transient locks to reduce cold-cache API pressure.
+* Increased map marker loading for closer parity with iNaturalist map views.
 
 = 0.2.1 =
 * Added observation map block and shortcode.
