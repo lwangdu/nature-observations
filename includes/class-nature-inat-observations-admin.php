@@ -31,8 +31,8 @@ final class Nature_INat_Observations_Admin {
 	 */
 	public static function get_options() {
 		$defaults = array(
-			'project_id'   => 3234,
-			'project_slug' => 'stunt-ranch-santa-monica-mountains-reserve',
+			'project_id'   => NATURE_INAT_DEFAULT_PROJECT_ID,
+			'project_slug' => NATURE_INAT_DEFAULT_PROJECT_SLUG,
 			'per_page'     => 100,
 			'cache_ttl'    => HOUR_IN_SECONDS,
 			'open_new_tab' => 1,
@@ -128,8 +128,8 @@ final class Nature_INat_Observations_Admin {
 		$options = is_array( $options ) ? $options : array();
 
 		return array(
-			'project_id'   => absint( $options['project_id'] ?? 3234 ),
-			'project_slug' => sanitize_title( $options['project_slug'] ?? 'stunt-ranch-santa-monica-mountains-reserve' ),
+			'project_id'   => absint( $options['project_id'] ?? NATURE_INAT_DEFAULT_PROJECT_ID ),
+			'project_slug' => sanitize_title( $options['project_slug'] ?? NATURE_INAT_DEFAULT_PROJECT_SLUG ),
 			'per_page'     => min( Nature_INat_Observations_Cache::MAX_PER_PAGE, max( 1, absint( $options['per_page'] ?? 100 ) ) ),
 			'cache_ttl'    => min( DAY_IN_SECONDS, max( 300, absint( $options['cache_ttl'] ?? HOUR_IN_SECONDS ) ) ),
 			'open_new_tab' => empty( $options['open_new_tab'] ) ? 0 : 1,
@@ -143,7 +143,7 @@ final class Nature_INat_Observations_Admin {
 		$options = self::get_options();
 		?>
 		<input type="text" name="<?php echo esc_attr( self::OPTION_NAME ); ?>[project_slug]" value="<?php echo esc_attr( $options['project_slug'] ); ?>" class="regular-text">
-		<p class="description"><?php esc_html_e( 'Example: stunt-ranch-santa-monica-mountains-reserve.', 'nature-inat-observations' ); ?></p>
+		<p class="description"><?php esc_html_e( 'Example: your-inaturalist-project-slug.', 'nature-inat-observations' ); ?></p>
 		<?php
 	}
 

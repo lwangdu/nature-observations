@@ -36,7 +36,7 @@ final class Nature_INat_Observations_Renderer {
 		$leaflet_js_path   = NATURE_INAT_PATH . 'assets/vendor/leaflet/leaflet.js';
 
 		wp_register_style(
-			'leaflet',
+			'nature-inat-leaflet',
 			NATURE_INAT_URL . 'assets/vendor/leaflet/leaflet.css',
 			array(),
 			file_exists( $leaflet_css_path ) ? filemtime( $leaflet_css_path ) : '1.9.4'
@@ -50,7 +50,7 @@ final class Nature_INat_Observations_Renderer {
 		);
 
 		wp_register_script(
-			'leaflet',
+			'nature-inat-leaflet',
 			NATURE_INAT_URL . 'assets/vendor/leaflet/leaflet.js',
 			array(),
 			file_exists( $leaflet_js_path ) ? filemtime( $leaflet_js_path ) : '1.9.4',
@@ -60,7 +60,7 @@ final class Nature_INat_Observations_Renderer {
 		wp_register_script(
 			'nature-inat-observations-map',
 			NATURE_INAT_URL . 'assets/js/map.js',
-			array( 'leaflet' ),
+			array( 'nature-inat-leaflet' ),
 			file_exists( $map_js_path ) ? filemtime( $map_js_path ) : NATURE_INAT_VERSION,
 			true
 		);
@@ -90,107 +90,108 @@ final class Nature_INat_Observations_Renderer {
 		wp_register_script(
 			'nature-inat-observations-block',
 			NATURE_INAT_URL . 'assets/js/block.js',
-			array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor', 'wp-server-side-render', 'nature-inat-observations-map' ),
+			array( 'wp-blocks', 'wp-element', 'wp-components', 'wp-block-editor', 'wp-server-side-render', 'wp-i18n', 'nature-inat-observations-map' ),
 			file_exists( $block_js_path ) ? filemtime( $block_js_path ) : NATURE_INAT_VERSION,
 			true
 		);
+		wp_set_script_translations( 'nature-inat-observations-block', 'nature-inat-observations' );
 		wp_add_inline_script(
 			'nature-inat-observations-block',
 			'window.natureINatObservations = ' . wp_json_encode(
 				array(
-					'maxPerPage'        => Nature_INat_Observations_Cache::MAX_PER_PAGE,
-					'openLinksInNewTab' => ! empty( $options['open_new_tab'] ),
+					'defaultProjectId'   => absint( $options['project_id'] ),
+					'defaultProjectSlug' => $options['project_slug'],
+					'defaultPerPage'     => absint( $options['per_page'] ),
+					'maxPerPage'         => Nature_INat_Observations_Cache::MAX_PER_PAGE,
+					'openLinksInNewTab'  => ! empty( $options['open_new_tab'] ),
 				)
 			) . ';',
 			'before'
 		);
 
-		register_block_type(
-			'nature-inat/observations',
+		$observation_attributes = $this->block_attributes(
 			array(
-				'api_version'     => 2,
-				'editor_script'   => 'nature-inat-observations-block',
-				'style'           => 'nature-inat-observations',
-				'render_callback' => array( $this, 'render_block' ),
-				'attributes'      => array(
-					'projectId'         => array(
-						'type'    => 'number',
-						'default' => absint( $options['project_id'] ),
-					),
-					'projectSlug'       => array(
-						'type'    => 'string',
-						'default' => $options['project_slug'],
-					),
-					'placeId'           => array(
-						'type'    => 'number',
-						'default' => 0,
-					),
-					'userId'            => array(
-						'type'    => 'string',
-						'default' => '',
-					),
-					'perPage'           => array(
-						'type'    => 'number',
-						'default' => absint( $options['per_page'] ),
-					),
-					'openLinksInNewTab' => array(
-						'type'    => 'boolean',
-						'default' => ! empty( $options['open_new_tab'] ),
-					),
-					'title'             => array(
-						'type'    => 'string',
-						'default' => '',
-					),
-					'summary'           => array(
-						'type'    => 'string',
-						'default' => '',
-					),
-				),
+				'perPage' => absint( $options['per_page'] ),
+			)
+		);
+		$map_attributes         = $this->block_attributes(
+			array(
+				'perPage' => min( Nature_INat_Observations_Cache::MAX_PER_PAGE, 200 ),
 			)
 		);
 
 		register_block_type(
-			'nature-inat/observations-map',
+			NATURE_INAT_PATH . 'blocks/observations',
 			array(
-				'api_version'     => 2,
-				'editor_script'   => 'nature-inat-observations-block',
-				'style'           => array( 'leaflet', 'nature-inat-observations' ),
-				'render_callback' => array( $this, 'render_map_block' ),
-				'attributes'      => array(
-					'projectId'         => array(
-						'type'    => 'number',
-						'default' => absint( $options['project_id'] ),
-					),
-					'projectSlug'       => array(
-						'type'    => 'string',
-						'default' => $options['project_slug'],
-					),
-					'placeId'           => array(
-						'type'    => 'number',
-						'default' => 0,
-					),
-					'userId'            => array(
-						'type'    => 'string',
-						'default' => '',
-					),
-					'perPage'           => array(
-						'type'    => 'number',
-						'default' => min( Nature_INat_Observations_Cache::MAX_PER_PAGE, 200 ),
-					),
-					'openLinksInNewTab' => array(
-						'type'    => 'boolean',
-						'default' => ! empty( $options['open_new_tab'] ),
-					),
-					'title'             => array(
-						'type'    => 'string',
-						'default' => '',
-					),
-					'summary'           => array(
-						'type'    => 'string',
-						'default' => '',
-					),
-				),
+				'attributes'      => $observation_attributes,
+				'render_callback' => array( $this, 'render_block' ),
 			)
+		);
+
+		register_block_type(
+			NATURE_INAT_PATH . 'blocks/observations-map',
+			array(
+				'attributes'      => $map_attributes,
+				'render_callback' => array( $this, 'render_map_block' ),
+			)
+		);
+	}
+
+	/**
+	 * Get shared block attribute definitions with dynamic defaults.
+	 *
+	 * @param array $overrides Default overrides.
+	 * @return array
+	 */
+	private function block_attributes( $overrides = array() ) {
+		$options  = Nature_INat_Observations_Admin::get_options();
+		$defaults = wp_parse_args(
+			$overrides,
+			array(
+				'projectId'         => absint( $options['project_id'] ),
+				'projectSlug'       => $options['project_slug'],
+				'placeId'           => 0,
+				'userId'            => '',
+				'perPage'           => absint( $options['per_page'] ),
+				'openLinksInNewTab' => ! empty( $options['open_new_tab'] ),
+				'title'             => '',
+				'summary'           => '',
+			)
+		);
+
+		return array(
+			'projectId'         => array(
+				'type'    => 'number',
+				'default' => absint( $defaults['projectId'] ),
+			),
+			'projectSlug'       => array(
+				'type'    => 'string',
+				'default' => sanitize_title( $defaults['projectSlug'] ),
+			),
+			'placeId'           => array(
+				'type'    => 'number',
+				'default' => absint( $defaults['placeId'] ),
+			),
+			'userId'            => array(
+				'type'    => 'string',
+				'default' => sanitize_text_field( $defaults['userId'] ),
+			),
+			'perPage'           => array(
+				'type'    => 'number',
+				'default' => min( Nature_INat_Observations_Cache::MAX_PER_PAGE, max( 1, absint( $defaults['perPage'] ) ) ),
+			),
+			'openLinksInNewTab' => array(
+				'type'    => 'boolean',
+				'default' => ! empty( $defaults['openLinksInNewTab'] ),
+			),
+			'title'             => array(
+				'type'    => 'string',
+				'default' => sanitize_text_field( $defaults['title'] ),
+			),
+			'summary'           => array(
+				'type'    => 'string',
+				'default' => sanitize_text_field( $defaults['summary'] ),
+			),
 		);
 	}
 
@@ -261,14 +262,16 @@ final class Nature_INat_Observations_Renderer {
 	 * @return string
 	 */
 	public function render_block( $attributes ) {
+		$options = Nature_INat_Observations_Admin::get_options();
+
 		return $this->render(
 			array(
-				'project_id'   => $attributes['projectId'] ?? 3234,
-				'project_slug' => $attributes['projectSlug'] ?? '',
+				'project_id'   => $attributes['projectId'] ?? $options['project_id'],
+				'project_slug' => $attributes['projectSlug'] ?? $options['project_slug'],
 				'place_id'     => $attributes['placeId'] ?? 0,
 				'user_id'      => $attributes['userId'] ?? '',
-				'per_page'     => $attributes['perPage'] ?? 100,
-				'open_links'   => $attributes['openLinksInNewTab'] ?? Nature_INat_Observations_Admin::get_options()['open_new_tab'],
+				'per_page'     => $attributes['perPage'] ?? $options['per_page'],
+				'open_links'   => $attributes['openLinksInNewTab'] ?? $options['open_new_tab'],
 				'title'        => $attributes['title'] ?? '',
 				'summary'      => $attributes['summary'] ?? '',
 			)
@@ -319,14 +322,16 @@ final class Nature_INat_Observations_Renderer {
 	 * @return string
 	 */
 	public function render_map_block( $attributes ) {
+		$options = Nature_INat_Observations_Admin::get_options();
+
 		return $this->render_map(
 			array(
-				'project_id'   => $attributes['projectId'] ?? 3234,
-				'project_slug' => $attributes['projectSlug'] ?? '',
+				'project_id'   => $attributes['projectId'] ?? $options['project_id'],
+				'project_slug' => $attributes['projectSlug'] ?? $options['project_slug'],
 				'place_id'     => $attributes['placeId'] ?? 0,
 				'user_id'      => $attributes['userId'] ?? '',
-				'per_page'     => $attributes['perPage'] ?? 200,
-				'open_links'   => $attributes['openLinksInNewTab'] ?? Nature_INat_Observations_Admin::get_options()['open_new_tab'],
+				'per_page'     => $attributes['perPage'] ?? min( Nature_INat_Observations_Cache::MAX_PER_PAGE, 200 ),
+				'open_links'   => $attributes['openLinksInNewTab'] ?? $options['open_new_tab'],
 				'title'        => $attributes['title'] ?? '',
 				'summary'      => $attributes['summary'] ?? '',
 			)
@@ -340,7 +345,7 @@ final class Nature_INat_Observations_Renderer {
 	 * @return string
 	 */
 	private function render_map( $args ) {
-		wp_enqueue_style( 'leaflet' );
+		wp_enqueue_style( 'nature-inat-leaflet' );
 		wp_enqueue_style( 'nature-inat-observations' );
 		wp_enqueue_script( 'nature-inat-observations-map' );
 
@@ -423,13 +428,23 @@ final class Nature_INat_Observations_Renderer {
 											'nature-inat/observations-map'
 										) : '';
 										?>
-										<a class="nature-inat-map__thumb" href="<?php echo esc_url( $observation['url'] ); ?>"<?php echo $open_links_in_new_tab ? ' target="_blank" rel="noopener noreferrer"' : ''; ?><?php echo $use_interactivity_api ? ' ' . $thumb_context . ' data-wp-on--focus="actions.selectObservation" data-wp-on--mouseenter="actions.selectObservation" data-wp-on--pointerdown="actions.selectObservation" data-wp-class--is-active="state.isActiveObservation" data-wp-bind--aria-current="state.activeObservationAriaCurrent"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-											<?php if ( '' !== $observation['photo_url'] ) : ?>
-												<img src="<?php echo esc_url( $observation['photo_url'] ); ?>" alt="<?php echo esc_attr( $observation['photo_alt'] ); ?>">
-											<?php else : ?>
-												<span><?php echo esc_html( $observation['common_name'] ); ?></span>
-											<?php endif; ?>
-										</a>
+										<?php if ( ! empty( $observation['url'] ) ) : ?>
+											<a class="nature-inat-map__thumb" href="<?php echo esc_url( $observation['url'] ); ?>"<?php echo $open_links_in_new_tab ? ' target="_blank" rel="noopener noreferrer"' : ''; ?><?php echo $use_interactivity_api ? ' ' . $thumb_context . ' data-wp-on--focus="actions.selectObservation" data-wp-on--mouseenter="actions.selectObservation" data-wp-on--pointerdown="actions.selectObservation" data-wp-class--is-active="state.isActiveObservation" data-wp-bind--aria-current="state.activeObservationAriaCurrent"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+												<?php if ( '' !== $observation['photo_url'] ) : ?>
+													<img src="<?php echo esc_url( $observation['photo_url'] ); ?>" alt="<?php echo esc_attr( $observation['photo_alt'] ); ?>">
+												<?php else : ?>
+													<span><?php echo esc_html( $observation['common_name'] ); ?></span>
+												<?php endif; ?>
+											</a>
+										<?php else : ?>
+											<span class="nature-inat-map__thumb"<?php echo $use_interactivity_api ? ' ' . $thumb_context . ' data-wp-on--mouseenter="actions.selectObservation" data-wp-class--is-active="state.isActiveObservation"' : ''; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+												<?php if ( '' !== $observation['photo_url'] ) : ?>
+													<img src="<?php echo esc_url( $observation['photo_url'] ); ?>" alt="<?php echo esc_attr( $observation['photo_alt'] ); ?>">
+												<?php else : ?>
+													<span><?php echo esc_html( $observation['common_name'] ); ?></span>
+												<?php endif; ?>
+											</span>
+										<?php endif; ?>
 									<?php endforeach; ?>
 								<?php endif; ?>
 							</div>
@@ -482,6 +497,7 @@ final class Nature_INat_Observations_Renderer {
 		$labelledby            = '' !== $title ? ' aria-labelledby="' . esc_attr( $heading_id ) . '"' : '';
 		$stats                 = is_wp_error( $data ) ? null : Nature_INat_Observations_Cache::get_source_stats( $query_args );
 		$stats_title           = ! is_wp_error( $stats ) && ! empty( $stats['label'] ) ? $stats['label'] : __( 'iNaturalist', 'nature-inat-observations' );
+		$stats_filter_label    = $this->group_label( $group );
 		$open_links_in_new_tab = ! in_array( $args['open_links'], array( false, 0, '0', 'false', 'no', 'off' ), true );
 		$section_context       = $use_interactivity_api ? wp_interactivity_data_wp_context(
 			array(
@@ -508,7 +524,7 @@ final class Nature_INat_Observations_Renderer {
 			<?php elseif ( empty( $data['results'] ) ) : ?>
 				<p class="nature-inat__notice"><?php esc_html_e( 'No observations found for this filter.', 'nature-inat-observations' ); ?></p>
 			<?php else : ?>
-				<?php $this->render_stats_cards( Nature_INat_Observations_Cache::displayed_stats( $data ), $stats, $stats_title, $open_links_in_new_tab ); ?>
+				<?php $this->render_stats_cards( Nature_INat_Observations_Cache::displayed_stats( $data ), $stats, $stats_title, $open_links_in_new_tab, $stats_filter_label ); ?>
 				<?php $this->render_filters( $group ); ?>
 				<div class="nature-inat__grid">
 					<?php foreach ( $data['results'] as $observation ) : ?>
@@ -524,14 +540,27 @@ final class Nature_INat_Observations_Renderer {
 	}
 
 	/**
+	 * Get a display label for an active group filter.
+	 *
+	 * @param string $group Group key.
+	 * @return string
+	 */
+	private function group_label( $group ) {
+		$options = Nature_INat_Observations_Cache::group_options();
+
+		return '' !== $group && isset( $options[ $group ] ) ? $options[ $group ] : '';
+	}
+
+	/**
 	 * Render observation summary cards.
 	 *
 	 * @param array       $displayed_stats       Displayed-page stats.
 	 * @param array|false $source_stats          Source stats.
 	 * @param string      $title                 Source title.
 	 * @param bool        $open_links_in_new_tab Whether links open in a new tab.
+	 * @param string      $filter_label          Active filter label.
 	 */
-	private function render_stats_cards( $displayed_stats, $source_stats, $title, $open_links_in_new_tab ) {
+	private function render_stats_cards( $displayed_stats, $source_stats, $title, $open_links_in_new_tab, $filter_label = '' ) {
 		?>
 		<div class="nature-inat-stats" aria-label="<?php esc_attr_e( 'iNaturalist observation summary', 'nature-inat-observations' ); ?>">
 			<div class="nature-inat-stats__card">
@@ -547,11 +576,20 @@ final class Nature_INat_Observations_Renderer {
 				<div class="nature-inat-stats__card nature-inat-stats__card--source">
 					<p class="nature-inat-stats__eyebrow">
 						<?php
-						printf(
-							/* translators: %s: iNaturalist source title. */
-							esc_html__( '%s - All time', 'nature-inat-observations' ),
-							esc_html( $title )
-						);
+						if ( '' !== $filter_label ) {
+							printf(
+								/* translators: 1: iNaturalist source title, 2: active filter label. */
+								esc_html__( '%1$s - All time, %2$s', 'nature-inat-observations' ),
+								esc_html( $title ),
+								esc_html( $filter_label )
+							);
+						} else {
+							printf(
+								/* translators: %s: iNaturalist source title. */
+								esc_html__( '%s - All time', 'nature-inat-observations' ),
+								esc_html( $title )
+							);
+						}
 						?>
 					</p>
 					<div class="nature-inat-stats__metrics">

@@ -70,6 +70,7 @@ function paginationUrlFromElement() {
 }
 
 function prefetchPaginationPage() {
+	var link;
 	var url = paginationUrlFromElement();
 
 	if ( ! url || prefetchedUrls.has( url ) ) {
@@ -77,12 +78,11 @@ function prefetchPaginationPage() {
 	}
 
 	prefetchedUrls.add( url );
-
-	fetch( url, {
-		credentials: 'same-origin'
-	} ).catch( function () {
-		prefetchedUrls.delete( url );
-	} );
+	link = document.createElement( 'link' );
+	link.rel = 'prefetch';
+	link.href = url;
+	link.as = 'document';
+	document.head.appendChild( link );
 }
 
 mapStore = store( 'nature-inat/observations-map', {

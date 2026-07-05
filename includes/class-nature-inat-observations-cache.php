@@ -19,6 +19,8 @@ final class Nature_INat_Observations_Cache {
 	const MAX_PER_PAGE      = 200;
 	const MAX_MAP_MARKERS   = 1000;
 	const LOCK_TTL          = 60;
+	const ERROR_TTL         = 120;
+	const STALE_TTL         = WEEK_IN_SECONDS;
 
 	/**
 	 * Get available observation group filters.
@@ -236,39 +238,41 @@ final class Nature_INat_Observations_Cache {
 	 * @return int
 	 */
 	public static function clear_cache() {
-		global $wpdb;
+		$keys    = self::cache_keys();
+		$deleted = 0;
 
-		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$deleted = $wpdb->query(
-			"DELETE FROM {$wpdb->options}
-			WHERE option_name LIKE '_transient_nature_inat_%'
-			OR option_name LIKE '_transient_timeout_nature_inat_%'"
-		);
+		foreach ( $keys as $key ) {
+			delete_transient( $key );
+			++$deleted;
+		}
 
-		return false === $deleted ? 0 : absint( $deleted );
+		delete_option( NATURE_INAT_CACHE_KEYS_OPTION );
+
+		return $deleted;
 	}
 
 	/**
-	 * Warm the default source caches in the background.
+	 * Warm caches for default and saved block/shortcode sources in the background.
 	 */
 	public static function warm_default_cache() {
-		$options = Nature_INat_Observations_Admin::get_options();
-		$args    = array(
-			'project_id'   => $options['project_id'],
-			'project_slug' => $options['project_slug'],
-			'place_id'     => 0,
-			'user_id'      => '',
-			'per_page'     => $options['per_page'],
-			'page'         => 1,
-			'group'        => '',
-		);
+		foreach ( self::warm_sources() as $source ) {
+			self::warm_source( $source );
+		}
+	}
 
+	/**
+	 * Warm one source cache set.
+	 *
+	 * @param array $args Source arguments.
+	 */
+	private static function warm_source( $args ) {
 		self::get_source_stats( $args );
 		self::get_source_boundary( $args );
 		self::get_observations( $args );
 
 		$map_args             = $args;
 		$map_args['geo']      = true;
+		$map_args['page']     = 1;
 		$map_args['per_page'] = self::MAX_PER_PAGE;
 
 		$first_page = self::get_observations( $map_args );
@@ -289,6 +293,150 @@ final class Nature_INat_Observations_Cache {
 				return;
 			}
 		}
+	}
+
+	/**
+	 * Get unique sources to warm from settings and saved content.
+	 *
+	 * @return array
+	 */
+	private static function warm_sources() {
+		$options = Nature_INat_Observations_Admin::get_options();
+		$sources = array(
+			self::warm_source_args(
+				array(
+					'project_id'   => $options['project_id'],
+					'project_slug' => $options['project_slug'],
+					'per_page'     => $options['per_page'],
+				)
+			),
+		);
+
+		$post_types = get_post_types( array( 'public' => true ), 'names' );
+		$posts      = get_posts(
+			array(
+				'post_type'      => array_values( $post_types ),
+				'post_status'    => array( 'publish', 'private', 'draft' ),
+				'posts_per_page' => 100,
+				'no_found_rows'  => true,
+			)
+		);
+
+		foreach ( $posts as $post ) {
+			$sources = array_merge( $sources, self::sources_from_content( $post->post_content, $options ) );
+		}
+
+		$unique = array();
+		foreach ( $sources as $source ) {
+			if ( is_wp_error( self::normalize_query_args( $source, $options ) ) ) {
+				continue;
+			}
+
+			$key            = md5( wp_json_encode( self::warm_source_key_args( $source ) ) );
+			$unique[ $key ] = $source;
+		}
+
+		return array_slice( array_values( $unique ), 0, 20 );
+	}
+
+	/**
+	 * Extract plugin block and shortcode sources from post content.
+	 *
+	 * @param string $content Post content.
+	 * @param array  $options Plugin options.
+	 * @return array
+	 */
+	private static function sources_from_content( $content, $options ) {
+		$sources = array();
+
+		if ( has_blocks( $content ) ) {
+			$sources = array_merge( $sources, self::sources_from_blocks( parse_blocks( $content ), $options ) );
+		}
+
+		if ( has_shortcode( $content, 'nature_inat_observations' ) || has_shortcode( $content, 'nature_inat_observations_map' ) ) {
+			preg_match_all( '/' . get_shortcode_regex( array( 'nature_inat_observations', 'nature_inat_observations_map' ) ) . '/', $content, $matches, PREG_SET_ORDER );
+
+			foreach ( $matches as $match ) {
+				$atts      = shortcode_parse_atts( $match[3] );
+				$atts      = is_array( $atts ) ? $atts : array();
+				$sources[] = self::warm_source_args(
+					array(
+						'project_id'   => $atts['project_id'] ?? $options['project_id'],
+						'project_slug' => $atts['project_slug'] ?? $options['project_slug'],
+						'place_id'     => $atts['place_id'] ?? 0,
+						'user_id'      => $atts['user_id'] ?? '',
+						'per_page'     => $atts['per_page'] ?? $options['per_page'],
+					)
+				);
+			}
+		}
+
+		return $sources;
+	}
+
+	/**
+	 * Extract sources from parsed blocks.
+	 *
+	 * @param array $blocks  Parsed blocks.
+	 * @param array $options Plugin options.
+	 * @return array
+	 */
+	private static function sources_from_blocks( $blocks, $options ) {
+		$sources = array();
+
+		foreach ( $blocks as $block ) {
+			if ( in_array( $block['blockName'] ?? '', array( 'nature-inat/observations', 'nature-inat/observations-map' ), true ) ) {
+				$attrs     = is_array( $block['attrs'] ?? null ) ? $block['attrs'] : array();
+				$sources[] = self::warm_source_args(
+					array(
+						'project_id'   => $attrs['projectId'] ?? $options['project_id'],
+						'project_slug' => $attrs['projectSlug'] ?? $options['project_slug'],
+						'place_id'     => $attrs['placeId'] ?? 0,
+						'user_id'      => $attrs['userId'] ?? '',
+						'per_page'     => $attrs['perPage'] ?? $options['per_page'],
+					)
+				);
+			}
+
+			if ( ! empty( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ) {
+				$sources = array_merge( $sources, self::sources_from_blocks( $block['innerBlocks'], $options ) );
+			}
+		}
+
+		return $sources;
+	}
+
+	/**
+	 * Normalize warm-source arguments.
+	 *
+	 * @param array $args Source arguments.
+	 * @return array
+	 */
+	private static function warm_source_args( $args ) {
+		return array(
+			'project_id'   => absint( $args['project_id'] ?? 0 ),
+			'project_slug' => sanitize_title( $args['project_slug'] ?? '' ),
+			'place_id'     => absint( $args['place_id'] ?? 0 ),
+			'user_id'      => sanitize_text_field( $args['user_id'] ?? '' ),
+			'per_page'     => min( self::MAX_PER_PAGE, max( 1, absint( $args['per_page'] ?? 100 ) ) ),
+			'page'         => 1,
+			'group'        => '',
+		);
+	}
+
+	/**
+	 * Reduce warm source args to fields that identify the source.
+	 *
+	 * @param array $args Source arguments.
+	 * @return array
+	 */
+	private static function warm_source_key_args( $args ) {
+		return array(
+			'project_id'   => absint( $args['project_id'] ?? 0 ),
+			'project_slug' => sanitize_title( $args['project_slug'] ?? '' ),
+			'place_id'     => absint( $args['place_id'] ?? 0 ),
+			'user_id'      => sanitize_text_field( $args['user_id'] ?? '' ),
+		);
 	}
 
 	/**
@@ -396,7 +544,7 @@ final class Nature_INat_Observations_Cache {
 		);
 
 		if ( ! $normalized['project_id'] && '' === $normalized['project_slug'] && ! $normalized['place_id'] && '' === $normalized['user_id'] ) {
-			$normalized['project_id'] = max( 1, absint( $options['project_id'] ) );
+			return new WP_Error( 'nature_inat_source_missing', __( 'Please configure an iNaturalist source for this block.', 'nature-inat-observations' ) );
 		}
 
 		return $normalized;
@@ -584,10 +732,21 @@ final class Nature_INat_Observations_Cache {
 	 * @return mixed|WP_Error
 	 */
 	private static function cached_result( $cache_key, $ttl, $callback ) {
-		$cached = get_transient( $cache_key );
+		$stale_key = self::stale_cache_key( $cache_key );
+		$error_key = self::error_cache_key( $cache_key );
+		$cached    = get_transient( $cache_key );
 
 		if ( false !== $cached ) {
+			self::track_cache_key( $cache_key );
+
 			return $cached;
+		}
+
+		$cached_error = get_transient( $error_key );
+		if ( false !== $cached_error ) {
+			$stale = get_transient( $stale_key );
+
+			return false !== $stale ? $stale : self::unpack_error( $cached_error );
 		}
 
 		$lock_key = self::acquire_cache_lock( $cache_key );
@@ -596,15 +755,29 @@ final class Nature_INat_Observations_Cache {
 				return $lock_key->get_error_data();
 			}
 
-			return $lock_key;
+			$stale = get_transient( $stale_key );
+
+			if ( false !== $stale ) {
+				return $stale;
+			}
+
+			return new WP_Error( 'nature_inat_temporarily_unavailable', __( 'Observation data is temporarily unavailable. Please try again soon.', 'nature-inat-observations' ) );
 		}
 
 		try {
 			$result = call_user_func( $callback );
 
-			if ( ! is_wp_error( $result ) ) {
-				set_transient( $cache_key, $result, $ttl );
+			if ( is_wp_error( $result ) ) {
+				self::set_tracked_transient( $error_key, self::pack_error( $result ), self::ERROR_TTL );
+
+				$stale = get_transient( $stale_key );
+
+				return false !== $stale ? $stale : $result;
 			}
+
+			self::set_tracked_transient( $cache_key, $result, $ttl );
+			self::set_tracked_transient( $stale_key, $result, self::STALE_TTL );
+			delete_transient( $error_key );
 
 			return $result;
 		} finally {
@@ -623,7 +796,7 @@ final class Nature_INat_Observations_Cache {
 
 		for ( $attempt = 0; $attempt < 3; $attempt++ ) {
 			if ( false === get_transient( $lock_key ) ) {
-				set_transient( $lock_key, 1, self::LOCK_TTL );
+				self::set_tracked_transient( $lock_key, 1, self::LOCK_TTL );
 
 				return $lock_key;
 			}
@@ -636,7 +809,96 @@ final class Nature_INat_Observations_Cache {
 			}
 		}
 
-		return new WP_Error( 'nature_inat_cache_busy', __( 'The iNaturalist cache is refreshing. Please try again shortly.', 'nature-inat-observations' ) );
+		return new WP_Error( 'nature_inat_cache_busy', __( 'The iNaturalist cache is refreshing.', 'nature-inat-observations' ) );
+	}
+
+	/**
+	 * Store a transient and track its key for object-cache-safe clearing.
+	 *
+	 * @param string $key   Transient key.
+	 * @param mixed  $value Transient value.
+	 * @param int    $ttl   Transient lifetime.
+	 */
+	private static function set_tracked_transient( $key, $value, $ttl ) {
+		set_transient( $key, $value, $ttl );
+		self::track_cache_key( $key );
+	}
+
+	/**
+	 * Track a cache key for later clearing.
+	 *
+	 * @param string $key Transient key.
+	 */
+	private static function track_cache_key( $key ) {
+		$keys = self::cache_keys();
+
+		if ( ! in_array( $key, $keys, true ) ) {
+			$keys[] = $key;
+			update_option( NATURE_INAT_CACHE_KEYS_OPTION, array_slice( $keys, -500 ), false );
+		}
+	}
+
+	/**
+	 * Get tracked cache keys.
+	 *
+	 * @return array
+	 */
+	private static function cache_keys() {
+		$keys = get_option( NATURE_INAT_CACHE_KEYS_OPTION, array() );
+
+		return is_array( $keys ) ? array_values( array_filter( array_map( 'sanitize_key', $keys ) ) ) : array();
+	}
+
+	/**
+	 * Get the last-good stale transient key.
+	 *
+	 * @param string $cache_key Primary cache key.
+	 * @return string
+	 */
+	private static function stale_cache_key( $cache_key ) {
+		return $cache_key . '_stale';
+	}
+
+	/**
+	 * Get the short-lived error transient key.
+	 *
+	 * @param string $cache_key Primary cache key.
+	 * @return string
+	 */
+	private static function error_cache_key( $cache_key ) {
+		return $cache_key . '_error';
+	}
+
+	/**
+	 * Pack a WP_Error for transient storage.
+	 *
+	 * @param WP_Error $error Error object.
+	 * @return array
+	 */
+	private static function pack_error( $error ) {
+		return array(
+			'code'    => $error->get_error_code(),
+			'message' => $error->get_error_message(),
+			'data'    => $error->get_error_data(),
+		);
+	}
+
+	/**
+	 * Restore a WP_Error from transient storage.
+	 *
+	 * @param array $error Packed error.
+	 * @return WP_Error
+	 */
+	private static function unpack_error( $error ) {
+		if ( ! is_array( $error ) ) {
+			return new WP_Error( 'nature_inat_cached_error', __( 'Observation data is temporarily unavailable. Please try again soon.', 'nature-inat-observations' ) );
+		}
+
+		return new WP_Error(
+			sanitize_key( $error['code'] ?? 'nature_inat_cached_error' ),
+			sanitize_text_field( $error['message'] ?? __( 'Observation data is temporarily unavailable. Please try again soon.', 'nature-inat-observations' ) ),
+			$error['data'] ?? null
+		);
 	}
 
 	/**

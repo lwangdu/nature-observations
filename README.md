@@ -37,7 +37,7 @@ The plugin creates draft starter `iNaturalist Observations` and `Map of Observat
 
 Use the `iNaturalist Observations Map` block or `[nature_inat_observations_map]` shortcode to show a compact map of recent georeferenced observations with a small recent-observations photo strip underneath.
 
-The starter map page uses the Stunt Ranch project and up to 200 mapped observations by default.
+The starter pages inherit the source configured in Settings > iNaturalist Observations, so the same plugin can be used across different reserves.
 
 ## Third-party Services
 
@@ -56,7 +56,7 @@ Global defaults are available under:
 
 `Settings > iNaturalist Observations`
 
-These defaults are used by the block and shortcode unless page-specific block settings override them.
+These defaults are used by the block and shortcode unless page-specific block settings override them. New installs start without a reserve source, so each site can be configured for its own reserve.
 
 Use `Clear iNaturalist cache` on the settings page when source settings change or when cached observations need to refresh immediately.
 

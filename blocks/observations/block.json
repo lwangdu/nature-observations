@@ -1,0 +1,38 @@
+{
+    "$schema": "https://schemas.wp.org/trunk/block.json",
+    "apiVersion": 3,
+    "name": "nature-inat/observations",
+    "title": "iNaturalist Observations",
+    "category": "widgets",
+    "icon": "visibility",
+    "description": "Display cached iNaturalist observations with filters, stats, cards, and pagination.",
+    "textdomain": "nature-inat-observations",
+    "editorScript": "nature-inat-observations-block",
+    "style": "nature-inat-observations",
+    "attributes": {
+        "projectId": {
+            "type": "number"
+        },
+        "projectSlug": {
+            "type": "string"
+        },
+        "placeId": {
+            "type": "number"
+        },
+        "userId": {
+            "type": "string"
+        },
+        "perPage": {
+            "type": "number"
+        },
+        "openLinksInNewTab": {
+            "type": "boolean"
+        },
+        "title": {
+            "type": "string"
+        },
+        "summary": {
+            "type": "string"
+        }
+    }
+}

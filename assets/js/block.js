@@ -1,4 +1,4 @@
-( function ( blocks, element, components, blockEditor, serverSideRender ) {
+( function ( blocks, element, components, blockEditor, serverSideRender, i18n ) {
 	var el = element.createElement;
 	var useEffect = element.useEffect;
 	var useRef = element.useRef;
@@ -9,7 +9,11 @@
 	var TextControl = components.TextControl;
 	var ToggleControl = components.ToggleControl;
 	var ServerSideRender = serverSideRender;
+	var __ = i18n.__;
 	var settings = window.natureINatObservations || {};
+	var defaultProjectId = settings.defaultProjectId || 0;
+	var defaultProjectSlug = settings.defaultProjectSlug || '';
+	var defaultPerPage = settings.defaultPerPage || 100;
 	var maxPerPage = settings.maxPerPage || 200;
 	var openLinksInNewTab = settings.openLinksInNewTab !== false;
 
@@ -60,17 +64,17 @@
 	}
 
 	blocks.registerBlockType( 'nature-inat/observations', {
-		title: 'iNaturalist Observations',
+		title: __( 'iNaturalist Observations', 'nature-inat-observations' ),
 		icon: 'visibility',
 		category: 'widgets',
 		attributes: {
 			projectId: {
 				type: 'number',
-				default: 3234
+				default: defaultProjectId
 			},
 			projectSlug: {
 				type: 'string',
-				default: 'stunt-ranch-santa-monica-mountains-reserve'
+				default: defaultProjectSlug
 			},
 			placeId: {
 				type: 'number',
@@ -82,7 +86,7 @@
 			},
 			perPage: {
 				type: 'number',
-				default: 100
+				default: defaultPerPage
 			},
 			openLinksInNewTab: {
 				type: 'boolean',
@@ -100,16 +104,16 @@
 					{},
 					el(
 						PanelBody,
-						{ title: 'iNaturalist Source' },
+						{ title: __( 'iNaturalist Source', 'nature-inat-observations' ) },
 						el( TextControl, {
-							label: 'Project slug',
+							label: __( 'Project slug', 'nature-inat-observations' ),
 							value: attributes.projectSlug,
 							onChange: function ( value ) {
 								props.setAttributes( { projectSlug: value } );
 							}
 						} ),
 						el( TextControl, {
-							label: 'Project ID fallback',
+							label: __( 'Project ID fallback', 'nature-inat-observations' ),
 							type: 'number',
 							value: attributes.projectId,
 							onChange: function ( value ) {
@@ -117,7 +121,7 @@
 							}
 						} ),
 						el( TextControl, {
-							label: 'Place ID',
+							label: __( 'Place ID', 'nature-inat-observations' ),
 							type: 'number',
 							value: attributes.placeId,
 							onChange: function ( value ) {
@@ -125,23 +129,23 @@
 							}
 						} ),
 						el( TextControl, {
-							label: 'User ID or login',
+							label: __( 'User ID or login', 'nature-inat-observations' ),
 							value: attributes.userId,
 							onChange: function ( value ) {
 								props.setAttributes( { userId: value } );
 							}
 						} ),
 						el( TextControl, {
-							label: 'Observations per page',
+							label: __( 'Observations per page', 'nature-inat-observations' ),
 							type: 'number',
 							value: attributes.perPage,
 							onChange: function ( value ) {
-								var count = parseInt( value, 10 ) || 100;
+								var count = parseInt( value, 10 ) || defaultPerPage;
 								props.setAttributes( { perPage: Math.min( Math.max( count, 1 ), maxPerPage ) } );
 							}
 						} ),
 						el( ToggleControl, {
-							label: 'Open iNaturalist links in a new tab',
+							label: __( 'Open iNaturalist links in a new tab', 'nature-inat-observations' ),
 							checked: attributes.openLinksInNewTab,
 							onChange: function ( value ) {
 								props.setAttributes( { openLinksInNewTab: value } );
@@ -155,16 +159,16 @@
 					LoadingResponsePlaceholder: function () {
 						return el(
 							Placeholder,
-							{ label: 'iNaturalist Observations' },
+							{ label: __( 'iNaturalist Observations', 'nature-inat-observations' ) },
 							el( Spinner ),
-							el( 'span', {}, 'Loading observations...' )
+							el( 'span', {}, __( 'Loading observations...', 'nature-inat-observations' ) )
 						);
 					},
 					ErrorResponsePlaceholder: function () {
 						return el(
 							Placeholder,
-							{ label: 'iNaturalist Observations' },
-							el( 'span', {}, 'Unable to preview observations. Check the source settings and try again.' )
+							{ label: __( 'iNaturalist Observations', 'nature-inat-observations' ) },
+							el( 'span', {}, __( 'Unable to preview observations. Check the source settings and try again.', 'nature-inat-observations' ) )
 						);
 					}
 				} )
@@ -176,17 +180,17 @@
 	} );
 
 	blocks.registerBlockType( 'nature-inat/observations-map', {
-		title: 'iNaturalist Observations Map',
+		title: __( 'iNaturalist Observations Map', 'nature-inat-observations' ),
 		icon: 'location-alt',
 		category: 'widgets',
 		attributes: {
 			projectId: {
 				type: 'number',
-				default: 3234
+				default: defaultProjectId
 			},
 			projectSlug: {
 				type: 'string',
-				default: 'stunt-ranch-santa-monica-mountains-reserve'
+				default: defaultProjectSlug
 			},
 			placeId: {
 				type: 'number',
@@ -216,16 +220,16 @@
 					{},
 					el(
 						PanelBody,
-						{ title: 'iNaturalist Map Source' },
+						{ title: __( 'iNaturalist Map Source', 'nature-inat-observations' ) },
 						el( TextControl, {
-							label: 'Project slug',
+							label: __( 'Project slug', 'nature-inat-observations' ),
 							value: attributes.projectSlug,
 							onChange: function ( value ) {
 								props.setAttributes( { projectSlug: value } );
 							}
 						} ),
 						el( TextControl, {
-							label: 'Project ID fallback',
+							label: __( 'Project ID fallback', 'nature-inat-observations' ),
 							type: 'number',
 							value: attributes.projectId,
 							onChange: function ( value ) {
@@ -233,7 +237,7 @@
 							}
 						} ),
 						el( TextControl, {
-							label: 'Place ID',
+							label: __( 'Place ID', 'nature-inat-observations' ),
 							type: 'number',
 							value: attributes.placeId,
 							onChange: function ( value ) {
@@ -241,14 +245,14 @@
 							}
 						} ),
 						el( TextControl, {
-							label: 'User ID or login',
+							label: __( 'User ID or login', 'nature-inat-observations' ),
 							value: attributes.userId,
 							onChange: function ( value ) {
 								props.setAttributes( { userId: value } );
 							}
 						} ),
 						el( TextControl, {
-							label: 'Mapped observations',
+							label: __( 'Mapped observations', 'nature-inat-observations' ),
 							type: 'number',
 							value: attributes.perPage,
 							onChange: function ( value ) {
@@ -257,7 +261,7 @@
 							}
 						} ),
 						el( ToggleControl, {
-							label: 'Open iNaturalist links in a new tab',
+							label: __( 'Open iNaturalist links in a new tab', 'nature-inat-observations' ),
 							checked: attributes.openLinksInNewTab,
 							onChange: function ( value ) {
 								props.setAttributes( { openLinksInNewTab: value } );
@@ -271,16 +275,16 @@
 					LoadingResponsePlaceholder: function () {
 						return el(
 							Placeholder,
-							{ label: 'iNaturalist Observations Map' },
+							{ label: __( 'iNaturalist Observations Map', 'nature-inat-observations' ) },
 							el( Spinner ),
-							el( 'span', {}, 'Loading observation map...' )
+							el( 'span', {}, __( 'Loading observation map...', 'nature-inat-observations' ) )
 						);
 					},
 					ErrorResponsePlaceholder: function () {
 						return el(
 							Placeholder,
-							{ label: 'iNaturalist Observations Map' },
-							el( 'span', {}, 'Unable to preview the map. Check the source settings and try again.' )
+							{ label: __( 'iNaturalist Observations Map', 'nature-inat-observations' ) },
+							el( 'span', {}, __( 'Unable to preview the map. Check the source settings and try again.', 'nature-inat-observations' ) )
 						);
 					}
 				} )
@@ -290,4 +294,4 @@
 			return null;
 		}
 	} );
-} )( window.wp.blocks, window.wp.element, window.wp.components, window.wp.blockEditor, window.wp.serverSideRender );
+} )( window.wp.blocks, window.wp.element, window.wp.components, window.wp.blockEditor, window.wp.serverSideRender, window.wp.i18n );

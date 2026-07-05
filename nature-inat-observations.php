@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Nature iNaturalist Observations
  * Description: Displays iNaturalist project observations in WordPress using cached API requests and a block editor interface.
- * Version: 0.2.2
+ * Version: 0.2.3
  * Requires at least: 6.5
  * Requires PHP: 7.4
  * Author: Lobsang Wangdu
@@ -17,12 +17,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'NATURE_INAT_VERSION', '0.2.2' );
+define( 'NATURE_INAT_VERSION', '0.2.3' );
 define( 'NATURE_INAT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'NATURE_INAT_URL', plugin_dir_url( __FILE__ ) );
 define( 'NATURE_INAT_PAGE_OPTION', 'nature_inat_observations_page_id' );
 define( 'NATURE_INAT_MAP_PAGE_OPTION', 'nature_inat_observations_map_page_id' );
 define( 'NATURE_INAT_VERSION_OPTION', 'nature_inat_observations_version' );
+define( 'NATURE_INAT_CACHE_KEYS_OPTION', 'nature_inat_observations_cache_keys' );
+define( 'NATURE_INAT_DEFAULT_PROJECT_ID', 0 );
+define( 'NATURE_INAT_DEFAULT_PROJECT_SLUG', '' );
 
 require_once NATURE_INAT_PATH . 'includes/class-nature-inat-observations-plugin.php';
 require_once NATURE_INAT_PATH . 'includes/class-nature-inat-observations-admin.php';
@@ -99,14 +102,14 @@ function nature_inat_observations_create_default_pages() {
 		NATURE_INAT_PAGE_OPTION,
 		'inaturalist-observations',
 		__( 'iNaturalist Observations', 'nature-inat-observations' ),
-		'<!-- wp:paragraph --><p>Nature sites support remarkable biodiversity, and community science platforms like iNaturalist help document those living communities over time. This page highlights recent observations recorded for this reserve.</p><!-- /wp:paragraph -->' . "\n\n" . '<!-- wp:nature-inat/observations {"projectSlug":"stunt-ranch-santa-monica-mountains-reserve","projectId":3234,"perPage":100} /-->'
+		'<!-- wp:paragraph --><p>Nature sites support remarkable biodiversity, and community science platforms like iNaturalist help document those living communities over time. This page highlights recent observations recorded for this reserve.</p><!-- /wp:paragraph -->' . "\n\n" . '<!-- wp:nature-inat/observations ' . wp_json_encode( array( 'perPage' => 100 ) ) . ' /-->'
 	);
 
 	nature_inat_observations_create_page(
 		NATURE_INAT_MAP_PAGE_OPTION,
 		'map-of-observations',
 		__( 'Map of Observations', 'nature-inat-observations' ),
-		'<!-- wp:nature-inat/observations-map {"projectSlug":"stunt-ranch-santa-monica-mountains-reserve","projectId":3234,"perPage":200} /-->'
+		'<!-- wp:nature-inat/observations-map ' . wp_json_encode( array( 'perPage' => 200 ) ) . ' /-->'
 	);
 }
 
