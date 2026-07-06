@@ -16,6 +16,8 @@ if ( is_array( $cache_keys ) ) {
 	}
 }
 
+delete_transient( 'nature_inat_warm_sources_v1' );
+
 $timestamp = wp_next_scheduled( 'nature_inat_observations_warm_cache' );
 if ( $timestamp ) {
 	wp_unschedule_event( $timestamp, 'nature_inat_observations_warm_cache' );

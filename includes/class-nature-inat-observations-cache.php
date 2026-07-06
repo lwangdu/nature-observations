@@ -13,14 +13,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Fetches, normalizes, and caches iNaturalist API responses.
  */
 final class Nature_INat_Observations_Cache {
-	const API_BASE          = 'https://api.inaturalist.org/v1/observations';
-	const PROJECTS_API_BASE = 'https://api.inaturalist.org/v1/projects';
-	const PLACES_API_BASE   = 'https://api.inaturalist.org/v1/places';
-	const MAX_PER_PAGE      = 200;
-	const MAX_MAP_MARKERS   = 1000;
-	const LOCK_TTL          = 60;
-	const ERROR_TTL         = 120;
-	const STALE_TTL         = WEEK_IN_SECONDS;
+	const API_BASE               = 'https://api.inaturalist.org/v1/observations';
+	const PROJECTS_API_BASE      = 'https://api.inaturalist.org/v1/projects';
+	const PLACES_API_BASE        = 'https://api.inaturalist.org/v1/places';
+	const MAX_PER_PAGE           = 200;
+	const MAX_MAP_MARKERS        = 1000;
+	const LOCK_TTL               = 60;
+	const ERROR_TTL              = 120;
+	const STALE_TTL              = WEEK_IN_SECONDS;
+	const WARM_SOURCES_CACHE_KEY = 'nature_inat_warm_sources_v1';
 
 	/**
 	 * Get available observation group filters.
@@ -241,6 +242,8 @@ final class Nature_INat_Observations_Cache {
 		$keys    = self::cache_keys();
 		$deleted = 0;
 
+		delete_transient( self::WARM_SOURCES_CACHE_KEY );
+
 		foreach ( $keys as $key ) {
 			delete_transient( $key );
 			++$deleted;
@@ -249,6 +252,13 @@ final class Nature_INat_Observations_Cache {
 		delete_option( NATURE_INAT_CACHE_KEYS_OPTION );
 
 		return $deleted;
+	}
+
+	/**
+	 * Clear the cached warm-source list when content changes.
+	 */
+	public static function clear_warm_sources_cache() {
+		delete_transient( self::WARM_SOURCES_CACHE_KEY );
 	}
 
 	/**
@@ -301,8 +311,14 @@ final class Nature_INat_Observations_Cache {
 	 * @return array
 	 */
 	private static function warm_sources() {
-		$options = Nature_INat_Observations_Admin::get_options();
-		$sources = array(
+		$cached = get_transient( self::WARM_SOURCES_CACHE_KEY );
+
+		if ( false !== $cached ) {
+			return $cached;
+		}
+
+		$options    = Nature_INat_Observations_Admin::get_options();
+		$sources    = array(
 			self::warm_source_args(
 				array(
 					'project_id'   => $options['project_id'],
@@ -311,19 +327,43 @@ final class Nature_INat_Observations_Cache {
 				)
 			),
 		);
-
 		$post_types = get_post_types( array( 'public' => true ), 'names' );
-		$posts      = get_posts(
-			array(
-				'post_type'      => array_values( $post_types ),
-				'post_status'    => array( 'publish', 'private', 'draft' ),
-				'posts_per_page' => 100,
-				'no_found_rows'  => true,
-			)
-		);
 
-		foreach ( $posts as $post ) {
-			$sources = array_merge( $sources, self::sources_from_content( $post->post_content, $options ) );
+		if ( ! empty( $post_types ) ) {
+			global $wpdb;
+
+			$post_type_placeholders = implode( ', ', array_fill( 0, count( $post_types ), '%s' ) );
+			$source_like_terms      = array(
+				'%wp:nature-inat/observations%',
+				'%[nature_inat_observations%',
+				'%[nature_inat_observations_map%',
+			);
+
+			// phpcs:disable WordPress.DB -- Dynamic post type placeholders are prepared below and the result is cached for a day.
+			$post_ids = $wpdb->get_col(
+				$wpdb->prepare(
+					"SELECT ID FROM {$wpdb->posts}
+					WHERE post_status IN ( 'publish', 'private', 'draft' )
+					AND post_type IN ( {$post_type_placeholders} )
+					AND (
+						post_content LIKE %s
+						OR post_content LIKE %s
+						OR post_content LIKE %s
+					)
+					ORDER BY post_modified DESC
+					LIMIT 100",
+					array_merge( array_values( $post_types ), $source_like_terms )
+				)
+			);
+			// phpcs:enable WordPress.DB
+
+			foreach ( $post_ids as $post_id ) {
+				$post = get_post( $post_id );
+
+				if ( $post instanceof WP_Post ) {
+					$sources = array_merge( $sources, self::sources_from_content( $post->post_content, $options ) );
+				}
+			}
 		}
 
 		$unique = array();
@@ -336,7 +376,11 @@ final class Nature_INat_Observations_Cache {
 			$unique[ $key ] = $source;
 		}
 
-		return array_slice( array_values( $unique ), 0, 20 );
+		$result = array_slice( array_values( $unique ), 0, 20 );
+
+		self::set_tracked_transient( self::WARM_SOURCES_CACHE_KEY, $result, DAY_IN_SECONDS );
+
+		return $result;
 	}
 
 	/**

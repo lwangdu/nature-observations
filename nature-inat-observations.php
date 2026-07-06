@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Nature iNaturalist Observations
  * Description: Displays iNaturalist project observations in WordPress using cached API requests and a block editor interface.
- * Version: 0.2.3
+ * Version: 0.2.4
  * Requires at least: 6.5
  * Requires PHP: 7.4
  * Author: Lobsang Wangdu
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'NATURE_INAT_VERSION', '0.2.3' );
+define( 'NATURE_INAT_VERSION', '0.2.4' );
 define( 'NATURE_INAT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'NATURE_INAT_URL', plugin_dir_url( __FILE__ ) );
 define( 'NATURE_INAT_PAGE_OPTION', 'nature_inat_observations_page_id' );
