@@ -286,7 +286,7 @@ final class Nature_INat_Observations_Admin {
 			flush();
 		}
 
-		fclose( $output );
+		fclose( $output ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 		exit;
 	}
 
