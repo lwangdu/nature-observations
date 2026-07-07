@@ -1,6 +1,6 @@
 <?php
 /**
- * Block, shortcode, and front-end rendering.
+ * Block and front-end rendering.
  *
  * @package Nature_INat_Observations
  */
@@ -10,18 +10,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Renders observation blocks and shortcodes.
+ * Renders observation blocks.
  */
 final class Nature_INat_Observations_Renderer {
 	/**
-	 * Hook asset, block, and shortcode registration.
+	 * Hook asset and block registration.
 	 */
 	public function __construct() {
 		add_action( 'init', array( $this, 'register_assets' ), 5 );
 		add_action( 'init', array( $this, 'register_block' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_interactivity_assets' ) );
-		add_shortcode( 'nature_inat_observations', array( $this, 'render_shortcode' ) );
-		add_shortcode( 'nature_inat_observations_map', array( $this, 'render_map_shortcode' ) );
 	}
 
 	/**
@@ -29,7 +27,6 @@ final class Nature_INat_Observations_Renderer {
 	 */
 	public function register_assets() {
 		$frontend_css_path = NATURE_INAT_PATH . 'assets/css/frontend.css';
-		$block_js_path     = NATURE_INAT_PATH . 'assets/js/block.js';
 		$map_js_path       = NATURE_INAT_PATH . 'assets/js/map.js';
 		$view_js_path      = NATURE_INAT_PATH . 'assets/js/view.js';
 		$leaflet_css_path  = NATURE_INAT_PATH . 'assets/vendor/leaflet/leaflet.css';
@@ -210,49 +207,10 @@ final class Nature_INat_Observations_Renderer {
 
 		if (
 			has_block( 'nature-inat/observations', $post ) ||
-			has_block( 'nature-inat/observations-map', $post ) ||
-			has_shortcode( $post->post_content, 'nature_inat_observations' ) ||
-			has_shortcode( $post->post_content, 'nature_inat_observations_map' )
+			has_block( 'nature-inat/observations-map', $post )
 		) {
 			wp_enqueue_script_module( 'nature-inat-observations-view' );
 		}
-	}
-
-	/**
-	 * Render the observations shortcode.
-	 *
-	 * @param array $atts Shortcode attributes.
-	 * @return string
-	 */
-	public function render_shortcode( $atts ) {
-		$options = Nature_INat_Observations_Admin::get_options();
-		$atts    = shortcode_atts(
-			array(
-				'project_id'   => $options['project_id'],
-				'project_slug' => $options['project_slug'],
-				'place_id'     => 0,
-				'user_id'      => '',
-				'per_page'     => $options['per_page'],
-				'open_links'   => ! empty( $options['open_new_tab'] ),
-				'title'        => __( 'iNaturalist Observations', 'nature-inat-observations' ),
-				'summary'      => __( 'Live observations from this reserve on iNaturalist.', 'nature-inat-observations' ),
-			),
-			$atts,
-			'nature_inat_observations'
-		);
-
-		return $this->render(
-			array(
-				'project_id'   => $atts['project_id'],
-				'project_slug' => $atts['project_slug'],
-				'place_id'     => $atts['place_id'],
-				'user_id'      => $atts['user_id'],
-				'per_page'     => $atts['per_page'],
-				'open_links'   => $atts['open_links'],
-				'title'        => $atts['title'],
-				'summary'      => $atts['summary'],
-			)
-		);
 	}
 
 	/**
@@ -274,43 +232,6 @@ final class Nature_INat_Observations_Renderer {
 				'open_links'   => $attributes['openLinksInNewTab'] ?? $options['open_new_tab'],
 				'title'        => $attributes['title'] ?? '',
 				'summary'      => $attributes['summary'] ?? '',
-			)
-		);
-	}
-
-	/**
-	 * Render the map shortcode.
-	 *
-	 * @param array $atts Shortcode attributes.
-	 * @return string
-	 */
-	public function render_map_shortcode( $atts ) {
-		$options = Nature_INat_Observations_Admin::get_options();
-		$atts    = shortcode_atts(
-			array(
-				'project_id'   => $options['project_id'],
-				'project_slug' => $options['project_slug'],
-				'place_id'     => 0,
-				'user_id'      => '',
-				'per_page'     => min( Nature_INat_Observations_Cache::MAX_PER_PAGE, 200 ),
-				'open_links'   => ! empty( $options['open_new_tab'] ),
-				'title'        => '',
-				'summary'      => '',
-			),
-			$atts,
-			'nature_inat_observations_map'
-		);
-
-		return $this->render_map(
-			array(
-				'project_id'   => $atts['project_id'],
-				'project_slug' => $atts['project_slug'],
-				'place_id'     => $atts['place_id'],
-				'user_id'      => $atts['user_id'],
-				'per_page'     => $atts['per_page'],
-				'open_links'   => $atts['open_links'],
-				'title'        => $atts['title'],
-				'summary'      => $atts['summary'],
 			)
 		);
 	}

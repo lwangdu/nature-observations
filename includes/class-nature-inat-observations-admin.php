@@ -22,6 +22,7 @@ final class Nature_INat_Observations_Admin {
 		add_action( 'admin_menu', array( $this, 'add_options_page' ) );
 		add_action( 'admin_init', array( $this, 'register_settings' ) );
 		add_action( 'admin_post_nature_inat_clear_cache', array( $this, 'handle_clear_cache' ) );
+		add_action( 'admin_post_nature_inat_export_csv', array( $this, 'handle_csv_export' ) );
 	}
 
 	/**
@@ -216,6 +217,166 @@ final class Nature_INat_Observations_Admin {
 		exit;
 	}
 
+
+	/**
+	 * Export all current settings-source observations as CSV.
+	 */
+	public function handle_csv_export() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have permission to export observations.', 'nature-inat-observations' ), '', array( 'response' => 403 ) );
+		}
+
+		check_admin_referer( 'nature_inat_export_csv' );
+
+		wp_raise_memory_limit( 'admin' );
+		$this->extend_csv_export_time_limit( 300 );
+
+		$options    = self::get_options();
+		$query_args = array(
+			'project_id'   => $options['project_id'],
+			'project_slug' => $options['project_slug'],
+			'place_id'     => 0,
+			'user_id'      => '',
+			'per_page'     => Nature_INat_Observations_Cache::MAX_PER_PAGE,
+			'page'         => 1,
+			'group'        => '',
+		);
+		$filename   = 'inat-observations-' . gmdate( 'Y-m-d' ) . '.csv';
+		$output     = fopen( 'php://output', 'w' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+
+		if ( false === $output ) {
+			wp_die( esc_html__( 'The CSV export could not be created.', 'nature-inat-observations' ), '', array( 'response' => 500 ) );
+		}
+
+		nocache_headers();
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+		header( 'X-Content-Type-Options: nosniff' );
+
+		$this->write_csv_header( $output );
+
+		$total_results = null;
+		$total_pages   = 1;
+
+		for ( $page = 1; $page <= $total_pages; $page++ ) {
+			$this->extend_csv_export_time_limit();
+			$query_args['page'] = $page;
+			$data               = Nature_INat_Observations_Cache::get_observations( $query_args );
+
+			if ( is_wp_error( $data ) ) {
+				$this->write_csv_error_row( $output, $data );
+				break;
+			}
+
+			$results = $data['results'] ?? array();
+			if ( empty( $results ) ) {
+				break;
+			}
+
+			if ( null === $total_results ) {
+				$total_results = absint( $data['total_results'] ?? count( $results ) );
+				$per_page      = max( 1, absint( $data['per_page'] ?? Nature_INat_Observations_Cache::MAX_PER_PAGE ) );
+				$total_pages   = (int) ceil( $total_results / $per_page );
+			}
+
+			foreach ( $results as $observation ) {
+				$this->write_csv_observation_row( $output, $observation );
+			}
+
+			flush();
+		}
+
+		fclose( $output );
+		exit;
+	}
+
+	/**
+	 * Extend the time available for a large admin CSV export.
+	 *
+	 * @param int $seconds Time limit in seconds.
+	 */
+	private function extend_csv_export_time_limit( $seconds = 60 ) {
+		if ( ! function_exists( 'set_time_limit' ) ) {
+			return;
+		}
+
+		set_time_limit( max( 1, absint( $seconds ) ) );
+	}
+
+	/**
+	 * Write CSV column headers.
+	 *
+	 * @param resource $output Output stream.
+	 */
+	private function write_csv_header( $output ) {
+		fputcsv(
+			$output,
+			array(
+				'observation_id',
+				'common_name',
+				'scientific_name',
+				'taxon_group',
+				'observed_on',
+				'observer',
+				'quality_grade',
+				'latitude',
+				'longitude',
+				'observation_url',
+				'photo_url',
+			)
+		);
+	}
+
+	/**
+	 * Write an export error as a CSV row.
+	 *
+	 * @param resource $output Output stream.
+	 * @param WP_Error $error  Export error.
+	 */
+	private function write_csv_error_row( $output, $error ) {
+		fputcsv(
+			$output,
+			array(
+				'export_error',
+				$error->get_error_message(),
+				'',
+				'',
+				'',
+				'',
+				'',
+				'',
+				'',
+				'',
+				'',
+			)
+		);
+	}
+
+	/**
+	 * Write one normalized observation CSV row.
+	 *
+	 * @param resource $output Output stream.
+	 * @param array    $observation Normalized observation data.
+	 */
+	private function write_csv_observation_row( $output, $observation ) {
+		fputcsv(
+			$output,
+			array(
+				$observation['id'] ?? '',
+				$observation['common_name'] ?? '',
+				$observation['scientific_name'] ?? '',
+				$observation['taxon_group'] ?? '',
+				$observation['observed_on'] ?? '',
+				$observation['observer'] ?? '',
+				$observation['quality_grade'] ?? '',
+				$observation['latitude'] ?? '',
+				$observation['longitude'] ?? '',
+				$observation['url'] ?? '',
+				$observation['photo_url'] ?? '',
+			)
+		);
+	}
+
 	/**
 	 * Render the settings page.
 	 */
@@ -251,10 +412,15 @@ final class Nature_INat_Observations_Admin {
 				<?php wp_nonce_field( 'nature_inat_clear_cache' ); ?>
 				<?php submit_button( __( 'Clear iNaturalist cache', 'nature-inat-observations' ), 'secondary', 'submit', false ); ?>
 			</form>
+			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin-top: 1em;">
+				<input type="hidden" name="action" value="nature_inat_export_csv">
+				<?php wp_nonce_field( 'nature_inat_export_csv' ); ?>
+				<?php submit_button( __( 'Export CSV', 'nature-inat-observations' ), 'secondary', 'submit', false ); ?>
+			</form>
+			<p class="description"><?php esc_html_e( 'Click the "Export CSV" button to download the displayed iNaturalist observations. Please be patient—downloading may take some time, especially for large datasets.', 'nature-inat-observations' ); ?></p>
 			<p><?php esc_html_e( 'Add the iNaturalist Observations block to a dedicated page, then set the reserve source in the block sidebar.', 'nature-inat-observations' ); ?></p>
 			<h2><?php esc_html_e( 'Block settings', 'nature-inat-observations' ); ?></h2>
 			<p><?php esc_html_e( 'Use Project slug for an iNaturalist project, Place ID for a reserve boundary, or User ID/login for an account feed. Leave Project slug blank and Project ID as 0 when using only a place or account source.', 'nature-inat-observations' ); ?></p>
-			<p><?php esc_html_e( 'Shortcode support remains available for older pages, but the block is recommended for new reserve pages.', 'nature-inat-observations' ); ?></p>
 		</div>
 		<?php
 	}

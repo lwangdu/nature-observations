@@ -14,8 +14,6 @@ A small WordPress plugin for displaying live iNaturalist observations on Nature 
 - Optional setting for opening iNaturalist links in a new tab.
 - Admin cache clearing for refreshing stale iNaturalist data.
 - Cached iNaturalist API requests to reduce page-load and API pressure.
-- Legacy shortcode support via `[nature_inat_observations]`.
-- Legacy map shortcode support via `[nature_inat_observations_map]`.
 
 ## Usage
 
@@ -35,7 +33,7 @@ The plugin creates draft starter `iNaturalist Observations` and `Map of Observat
 
 ## Map Page
 
-Use the `iNaturalist Observations Map` block or `[nature_inat_observations_map]` shortcode to show a compact map of recent georeferenced observations with a small recent-observations photo strip underneath.
+Use the `iNaturalist Observations Map` block to show a compact map of recent georeferenced observations with a small recent-observations photo strip underneath.
 
 The starter pages inherit the source configured in Settings > iNaturalist Observations, so the same plugin can be used across different reserves.
 
@@ -56,7 +54,7 @@ Global defaults are available under:
 
 `Settings > iNaturalist Observations`
 
-These defaults are used by the block and shortcode unless page-specific block settings override them. New installs start without a reserve source, so each site can be configured for its own reserve.
+These defaults are used by blocks unless page-specific block settings override them. New installs start without a reserve source, so each site can be configured for its own reserve.
 
 Use `Clear iNaturalist cache` on the settings page when source settings change or when cached observations need to refresh immediately.
 

@@ -262,7 +262,7 @@ final class Nature_INat_Observations_Cache {
 	}
 
 	/**
-	 * Warm caches for default and saved block/shortcode sources in the background.
+	 * Warm caches for default and saved block sources in the background.
 	 */
 	public static function warm_default_cache() {
 		foreach ( self::warm_sources() as $source ) {
@@ -335,8 +335,7 @@ final class Nature_INat_Observations_Cache {
 			$post_type_placeholders = implode( ', ', array_fill( 0, count( $post_types ), '%s' ) );
 			$source_like_terms      = array(
 				'%wp:nature-inat/observations%',
-				'%[nature_inat_observations%',
-				'%[nature_inat_observations_map%',
+				'%wp:nature-inat/observations-map%',
 			);
 
 			// phpcs:disable WordPress.DB -- Dynamic post type placeholders are prepared below and the result is cached for a day.
@@ -347,7 +346,6 @@ final class Nature_INat_Observations_Cache {
 					AND post_type IN ( {$post_type_placeholders} )
 					AND (
 						post_content LIKE %s
-						OR post_content LIKE %s
 						OR post_content LIKE %s
 					)
 					ORDER BY post_modified DESC
@@ -384,7 +382,7 @@ final class Nature_INat_Observations_Cache {
 	}
 
 	/**
-	 * Extract plugin block and shortcode sources from post content.
+	 * Extract plugin block sources from post content.
 	 *
 	 * @param string $content Post content.
 	 * @param array  $options Plugin options.
@@ -395,24 +393,6 @@ final class Nature_INat_Observations_Cache {
 
 		if ( has_blocks( $content ) ) {
 			$sources = array_merge( $sources, self::sources_from_blocks( parse_blocks( $content ), $options ) );
-		}
-
-		if ( has_shortcode( $content, 'nature_inat_observations' ) || has_shortcode( $content, 'nature_inat_observations_map' ) ) {
-			preg_match_all( '/' . get_shortcode_regex( array( 'nature_inat_observations', 'nature_inat_observations_map' ) ) . '/', $content, $matches, PREG_SET_ORDER );
-
-			foreach ( $matches as $match ) {
-				$atts      = shortcode_parse_atts( $match[3] );
-				$atts      = is_array( $atts ) ? $atts : array();
-				$sources[] = self::warm_source_args(
-					array(
-						'project_id'   => $atts['project_id'] ?? $options['project_id'],
-						'project_slug' => $atts['project_slug'] ?? $options['project_slug'],
-						'place_id'     => $atts['place_id'] ?? 0,
-						'user_id'      => $atts['user_id'] ?? '',
-						'per_page'     => $atts['per_page'] ?? $options['per_page'],
-					)
-				);
-			}
 		}
 
 		return $sources;

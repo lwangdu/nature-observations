@@ -1,10 +1,10 @@
 === Nature iNaturalist Observations ===
-Contributors: lwangdu
+Contributors: Lobsang Wangdu
 Tags: inaturalist, observations, biodiversity, maps, block
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.2.4
+Stable tag: 0.2.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Display cached iNaturalist observations in WordPress with block editor support, 
 
 == Description ==
 
-Nature iNaturalist Observations displays iNaturalist observations on WordPress sites. It provides dynamic blocks for an observation grid and a compact observation map, plus shortcode support for older pages.
+Nature iNaturalist Observations displays iNaturalist observations on WordPress sites. It provides dynamic blocks for an observation grid and a compact observation map.
 
 Features include:
 
@@ -27,7 +27,7 @@ Features include:
 * Map view with reserve boundary and recent observation thumbnails.
 * Optional setting for opening iNaturalist links in a new tab.
 * Admin cache clearing.
-* Shortcode support via [nature_inat_observations] and [nature_inat_observations_map].
+* Admin-only CSV export for all observations from the configured source.
 
 = Third-party services =
 
@@ -59,10 +59,6 @@ No. It uses public iNaturalist API endpoints.
 
 The plugin caches API responses in WordPress transients to reduce page-load time and API pressure. The cache can be cleared from the plugin settings page.
 
-= Can I use a shortcode instead of blocks? =
-
-Yes. Use [nature_inat_observations] for the grid view or [nature_inat_observations_map] for the map view.
-
 == Screenshots ==
 
 1. Observation grid with filters, stats, cards, and pagination.
@@ -70,12 +66,20 @@ Yes. Use [nature_inat_observations] for the grid view or [nature_inat_observatio
 
 == Changelog ==
 
+= 0.2.6 =
+* Stream admin CSV exports for large iNaturalist datasets and avoid HTML error output in CSV files.
+* Removed legacy shortcode support so the plugin is block-only.
+* Cleaned unused code and plugin-check warnings before submission.
+
+= 0.2.5 =
+* Added an admin-only CSV export button that exports all observations from the configured source.
+
 = 0.2.4 =
-* Cached the resolved cache-warmer source list and narrowed source discovery to posts containing plugin blocks or shortcodes.
+* Cached the resolved cache-warmer source list and narrowed source discovery to posts containing plugin blocks.
 
 = 0.2.3 =
 * Added stale cache fallback and short-lived API error caching for better cold-cache resilience.
-* Warm caches for sources found in saved blocks and shortcodes instead of only the settings default.
+* Warm caches for sources found in saved blocks instead of only the settings default.
 * Track cache keys so cache clearing works with persistent object caches.
 * Removed hardcoded reserve source defaults and added block metadata, JavaScript translations, prefixed Leaflet handles, and uninstall cleanup.
 
@@ -85,7 +89,7 @@ Yes. Use [nature_inat_observations] for the grid view or [nature_inat_observatio
 * Increased map marker loading for closer parity with iNaturalist map views.
 
 = 0.2.1 =
-* Added observation map block and shortcode.
+* Added observation map block.
 * Added reserve boundary display and terrain map tiles.
 * Added recent observations carousel with WordPress Interactivity API enhancements.
 * Added pagination prefetch/loading state with the WordPress Interactivity API.
