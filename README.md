@@ -1,6 +1,8 @@
 # Nature iNaturalist Observations
 
-A small WordPress plugin for displaying live iNaturalist observations on Nature sites. The plugin pulls observations from the iNaturalist API, caches responses with WordPress transients, and renders a Gutenberg block with cards, stats, filters, and pagination.
+Nature iNaturalist Observations displays observations from an iNaturalist project on WordPress using cached API requests and an intuitive Gutenberg block editor interface. Designed for organizations that manage iNaturalist projects, the plugin makes it easy to showcase project observations on their own website.
+
+The plugin retrieves observations from the iNaturalist API, caches responses using WordPress Transients to improve performance and reduce API requests, and renders a customizable Gutenberg block featuring observation cards, project statistics, filters, and pagination. With a simple block-based interface, you can add dynamic iNaturalist observation displays anywhere on your site.
 
 ## Features
 
