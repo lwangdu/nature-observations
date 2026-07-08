@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: Nature iNaturalist Observations
- * Description: Displays iNaturalist project observations in WordPress using cached API requests and a block editor interface.
+ * Description: Nature iNaturalist Observations lets organizations display observations from their iNaturalist projects on their WordPress website using cached API requests and a Gutenberg block. It provides a fast, easy way to showcase project observations while minimizing API calls.
  * Version: 0.2.6
  * Requires at least: 6.5
  * Requires PHP: 7.4

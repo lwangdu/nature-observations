@@ -1,5 +1,5 @@
 === Nature iNaturalist Observations ===
-Contributors: Lobsang Wangdu
+Contributors: lobsangw
 Tags: inaturalist, observations, biodiversity, maps, block
 Requires at least: 6.5
 Tested up to: 7.0
