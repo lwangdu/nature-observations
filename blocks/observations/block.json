@@ -1,14 +1,14 @@
 {
     "$schema": "https://schemas.wp.org/trunk/block.json",
     "apiVersion": 3,
-    "name": "nature-showcase-for-inaturalist/observations",
+    "name": "field-observation-showcase/observations",
     "title": "iNaturalist Observations",
     "category": "widgets",
     "icon": "visibility",
     "description": "Display cached iNaturalist observations with filters, stats, cards, and pagination.",
-    "textdomain": "nature-showcase-for-inaturalist",
-    "editorScript": "nature-showcase-for-inaturalist-block",
-    "style": "nature-showcase-for-inaturalist",
+    "textdomain": "field-observation-showcase",
+    "editorScript": "field-observation-showcase-block",
+    "style": "field-observation-showcase",
     "attributes": {
         "projectId": {
             "type": "number"

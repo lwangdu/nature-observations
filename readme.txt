@@ -1,10 +1,10 @@
-=== Nature Showcase for iNaturalist by LWangdu ===
+=== Field Observation Showcase ===
 Contributors: lobsangw
 Tags: inaturalist, observations, biodiversity, maps, block
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 0.2.7
+Stable tag: 0.2.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Display cached nature observations in WordPress with block editor support, obser
 
 == Description ==
 
-Nature Showcase for iNaturalist by LWangdu displays iNaturalist observations on WordPress sites. It provides dynamic blocks for an observation grid and a compact observation map.
+Field Observation Showcase displays iNaturalist observations on WordPress sites. It provides dynamic blocks for an observation grid and a compact observation map.
 
 This plugin is an independent WordPress plugin that displays publicly available observation data from iNaturalist. It is not affiliated with, endorsed by, or sponsored by iNaturalist.
 
@@ -46,7 +46,7 @@ This plugin bundles Leaflet 1.9.4 for the interactive map. Leaflet is licensed u
 
 1. Upload the plugin folder to the /wp-content/plugins/ directory, or install it through the WordPress Plugins screen.
 2. Activate the plugin through the Plugins screen in WordPress.
-3. Go to Settings > Nature Showcase for iNaturalist by LWangdu to configure default source settings.
+3. Go to Settings > Field Observation Showcase to configure default source settings.
 4. Add the iNaturalist Observations block or iNaturalist Observations Map block to a page.
 
 The plugin creates draft starter iNaturalist Observations and Map of Observations pages on activation if those pages do not already exist. Review and publish those pages when ready.
@@ -68,8 +68,12 @@ The plugin caches API responses in WordPress transients to reduce page-load time
 
 == Changelog ==
 
+= 0.2.8 =
+* Renamed the plugin to Field Observation Showcase and updated the plugin slug to avoid trademark concerns.
+* Kept compatibility aliases for previously saved block names.
+
 = 0.2.7 =
-* Renamed the plugin to Nature Showcase for iNaturalist by LWangdu for WordPress.org review clarity.
+* Renamed the plugin for WordPress.org review clarity.
 * Updated plugin slug, text domain, and third-party service disclosure for iNaturalist and Esri ArcGIS Online.
 
 = 0.2.6 =

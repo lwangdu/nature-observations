@@ -10,7 +10,7 @@
 	var ToggleControl = components.ToggleControl;
 	var ServerSideRender = serverSideRender;
 	var __ = i18n.__;
-	var settings = window.natureShowcaseForINaturalist || {};
+	var settings = window.fieldObservationShowcase || {};
 	var defaultProjectId = settings.defaultProjectId || 0;
 	var defaultProjectSlug = settings.defaultProjectSlug || '';
 	var defaultPerPage = settings.defaultPerPage || 100;
@@ -18,8 +18,8 @@
 	var openLinksInNewTab = settings.openLinksInNewTab !== false;
 
 	function initPreviewMaps( root ) {
-		if ( window.natureShowcaseForINaturalistInitMaps ) {
-			window.natureShowcaseForINaturalistInitMaps( root );
+		if ( window.fieldObservationShowcaseInitMaps ) {
+			window.fieldObservationShowcaseInitMaps( root );
 		}
 	}
 
@@ -63,8 +63,8 @@
 		);
 	}
 
-	blocks.registerBlockType( 'nature-showcase-for-inaturalist/observations', {
-		title: __( 'iNaturalist Observations', 'nature-showcase-for-inaturalist' ),
+	blocks.registerBlockType( 'field-observation-showcase/observations', {
+		title: __( 'iNaturalist Observations', 'field-observation-showcase' ),
 		icon: 'visibility',
 		category: 'widgets',
 		attributes: {
@@ -104,16 +104,16 @@
 					{},
 					el(
 						PanelBody,
-						{ title: __( 'iNaturalist Source', 'nature-showcase-for-inaturalist' ) },
+						{ title: __( 'iNaturalist Source', 'field-observation-showcase' ) },
 						el( TextControl, {
-							label: __( 'Project slug', 'nature-showcase-for-inaturalist' ),
+							label: __( 'Project slug', 'field-observation-showcase' ),
 							value: attributes.projectSlug,
 							onChange: function ( value ) {
 								props.setAttributes( { projectSlug: value } );
 							}
 						} ),
 						el( TextControl, {
-							label: __( 'Project ID fallback', 'nature-showcase-for-inaturalist' ),
+							label: __( 'Project ID fallback', 'field-observation-showcase' ),
 							type: 'number',
 							value: attributes.projectId,
 							onChange: function ( value ) {
@@ -121,7 +121,7 @@
 							}
 						} ),
 						el( TextControl, {
-							label: __( 'Place ID', 'nature-showcase-for-inaturalist' ),
+							label: __( 'Place ID', 'field-observation-showcase' ),
 							type: 'number',
 							value: attributes.placeId,
 							onChange: function ( value ) {
@@ -129,14 +129,14 @@
 							}
 						} ),
 						el( TextControl, {
-							label: __( 'User ID or login', 'nature-showcase-for-inaturalist' ),
+							label: __( 'User ID or login', 'field-observation-showcase' ),
 							value: attributes.userId,
 							onChange: function ( value ) {
 								props.setAttributes( { userId: value } );
 							}
 						} ),
 						el( TextControl, {
-							label: __( 'Observations per page', 'nature-showcase-for-inaturalist' ),
+							label: __( 'Observations per page', 'field-observation-showcase' ),
 							type: 'number',
 							value: attributes.perPage,
 							onChange: function ( value ) {
@@ -145,7 +145,7 @@
 							}
 						} ),
 						el( ToggleControl, {
-							label: __( 'Open iNaturalist links in a new tab', 'nature-showcase-for-inaturalist' ),
+							label: __( 'Open iNaturalist links in a new tab', 'field-observation-showcase' ),
 							checked: attributes.openLinksInNewTab,
 							onChange: function ( value ) {
 								props.setAttributes( { openLinksInNewTab: value } );
@@ -154,21 +154,21 @@
 					)
 				),
 				el( ServerSideRender, {
-					block: 'nature-showcase-for-inaturalist/observations',
+					block: 'field-observation-showcase/observations',
 					attributes: attributes,
 					LoadingResponsePlaceholder: function () {
 						return el(
 							Placeholder,
-							{ label: __( 'iNaturalist Observations', 'nature-showcase-for-inaturalist' ) },
+							{ label: __( 'iNaturalist Observations', 'field-observation-showcase' ) },
 							el( Spinner ),
-							el( 'span', {}, __( 'Loading observations...', 'nature-showcase-for-inaturalist' ) )
+							el( 'span', {}, __( 'Loading observations...', 'field-observation-showcase' ) )
 						);
 					},
 					ErrorResponsePlaceholder: function () {
 						return el(
 							Placeholder,
-							{ label: __( 'iNaturalist Observations', 'nature-showcase-for-inaturalist' ) },
-							el( 'span', {}, __( 'Unable to preview observations. Check the source settings and try again.', 'nature-showcase-for-inaturalist' ) )
+							{ label: __( 'iNaturalist Observations', 'field-observation-showcase' ) },
+							el( 'span', {}, __( 'Unable to preview observations. Check the source settings and try again.', 'field-observation-showcase' ) )
 						);
 					}
 				} )
@@ -179,8 +179,8 @@
 		}
 	} );
 
-	blocks.registerBlockType( 'nature-showcase-for-inaturalist/observations-map', {
-		title: __( 'iNaturalist Observations Map', 'nature-showcase-for-inaturalist' ),
+	blocks.registerBlockType( 'field-observation-showcase/observations-map', {
+		title: __( 'iNaturalist Observations Map', 'field-observation-showcase' ),
 		icon: 'location-alt',
 		category: 'widgets',
 		attributes: {
@@ -220,16 +220,16 @@
 					{},
 					el(
 						PanelBody,
-						{ title: __( 'iNaturalist Map Source', 'nature-showcase-for-inaturalist' ) },
+						{ title: __( 'iNaturalist Map Source', 'field-observation-showcase' ) },
 						el( TextControl, {
-							label: __( 'Project slug', 'nature-showcase-for-inaturalist' ),
+							label: __( 'Project slug', 'field-observation-showcase' ),
 							value: attributes.projectSlug,
 							onChange: function ( value ) {
 								props.setAttributes( { projectSlug: value } );
 							}
 						} ),
 						el( TextControl, {
-							label: __( 'Project ID fallback', 'nature-showcase-for-inaturalist' ),
+							label: __( 'Project ID fallback', 'field-observation-showcase' ),
 							type: 'number',
 							value: attributes.projectId,
 							onChange: function ( value ) {
@@ -237,7 +237,7 @@
 							}
 						} ),
 						el( TextControl, {
-							label: __( 'Place ID', 'nature-showcase-for-inaturalist' ),
+							label: __( 'Place ID', 'field-observation-showcase' ),
 							type: 'number',
 							value: attributes.placeId,
 							onChange: function ( value ) {
@@ -245,14 +245,14 @@
 							}
 						} ),
 						el( TextControl, {
-							label: __( 'User ID or login', 'nature-showcase-for-inaturalist' ),
+							label: __( 'User ID or login', 'field-observation-showcase' ),
 							value: attributes.userId,
 							onChange: function ( value ) {
 								props.setAttributes( { userId: value } );
 							}
 						} ),
 						el( TextControl, {
-							label: __( 'Mapped observations', 'nature-showcase-for-inaturalist' ),
+							label: __( 'Mapped observations', 'field-observation-showcase' ),
 							type: 'number',
 							value: attributes.perPage,
 							onChange: function ( value ) {
@@ -261,7 +261,7 @@
 							}
 						} ),
 						el( ToggleControl, {
-							label: __( 'Open iNaturalist links in a new tab', 'nature-showcase-for-inaturalist' ),
+							label: __( 'Open iNaturalist links in a new tab', 'field-observation-showcase' ),
 							checked: attributes.openLinksInNewTab,
 							onChange: function ( value ) {
 								props.setAttributes( { openLinksInNewTab: value } );
@@ -270,21 +270,21 @@
 					)
 				),
 				el( MapServerSidePreview, {
-					block: 'nature-showcase-for-inaturalist/observations-map',
+					block: 'field-observation-showcase/observations-map',
 					attributes: attributes,
 					LoadingResponsePlaceholder: function () {
 						return el(
 							Placeholder,
-							{ label: __( 'iNaturalist Observations Map', 'nature-showcase-for-inaturalist' ) },
+							{ label: __( 'iNaturalist Observations Map', 'field-observation-showcase' ) },
 							el( Spinner ),
-							el( 'span', {}, __( 'Loading observation map...', 'nature-showcase-for-inaturalist' ) )
+							el( 'span', {}, __( 'Loading observation map...', 'field-observation-showcase' ) )
 						);
 					},
 					ErrorResponsePlaceholder: function () {
 						return el(
 							Placeholder,
-							{ label: __( 'iNaturalist Observations Map', 'nature-showcase-for-inaturalist' ) },
-							el( 'span', {}, __( 'Unable to preview the map. Check the source settings and try again.', 'nature-showcase-for-inaturalist' ) )
+							{ label: __( 'iNaturalist Observations Map', 'field-observation-showcase' ) },
+							el( 'span', {}, __( 'Unable to preview the map. Check the source settings and try again.', 'field-observation-showcase' ) )
 						);
 					}
 				} )

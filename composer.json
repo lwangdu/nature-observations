@@ -1,5 +1,5 @@
 {
-	"name": "lwangdu/nature-showcase-for-inaturalist",
+	"name": "lwangdu/field-observation-showcase",
 	"description": "WordPress block plugin for displaying cached iNaturalist observations on Nature sites.",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",

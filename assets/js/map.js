@@ -33,7 +33,7 @@
 		var html = '';
 
 		if ( observation.photo_url ) {
-			html += '<img class="nature-showcase-for-inaturalist-map__popup-image" src="' + escapeAttribute( observation.photo_url ) + '" alt="">';
+			html += '<img class="field-observation-showcase-map__popup-image" src="' + escapeAttribute( observation.photo_url ) + '" alt="">';
 		}
 
 		html += '<strong>' + escapeHtml( observation.common_name ) + '</strong>';
@@ -54,7 +54,7 @@
 	}
 
 	function initMap( wrapper ) {
-		var canvas = wrapper.querySelector( '.nature-showcase-for-inaturalist-map__canvas' );
+		var canvas = wrapper.querySelector( '.field-observation-showcase-map__canvas' );
 		var observations;
 		var boundary;
 		var map;
@@ -129,7 +129,7 @@
 			markerById[ observation.id ] = marker;
 		} );
 
-		wrapper.addEventListener( 'nature-showcase-for-inaturalist-observation-select', function ( event ) {
+		wrapper.addEventListener( 'field-observation-showcase-observation-select', function ( event ) {
 			var marker = markerById[ event.detail.id ];
 
 			if ( ! marker ) {
@@ -169,11 +169,11 @@
 		var scope = root || document;
 		var wrappers = [];
 
-		if ( scope.matches && scope.matches( '.nature-showcase-for-inaturalist-map[data-observations]' ) ) {
+		if ( scope.matches && scope.matches( '.field-observation-showcase-map[data-observations]' ) ) {
 			wrappers.push( scope );
 		}
 
-		scope.querySelectorAll( '.nature-showcase-for-inaturalist-map[data-observations]' ).forEach( function ( wrapper ) {
+		scope.querySelectorAll( '.field-observation-showcase-map[data-observations]' ).forEach( function ( wrapper ) {
 			wrappers.push( wrapper );
 		} );
 
@@ -182,7 +182,7 @@
 		} );
 	}
 
-	window.natureShowcaseForINaturalistInitMaps = init;
+	window.fieldObservationShowcaseInitMaps = init;
 
 	if ( document.readyState === 'loading' ) {
 		document.addEventListener( 'DOMContentLoaded', function () {

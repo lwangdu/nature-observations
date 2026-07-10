@@ -50,7 +50,7 @@ function selectObservation() {
 
 	mapStore.state.activeObservationId = observationId;
 	element.ref.dispatchEvent(
-		new CustomEvent( 'nature-showcase-for-inaturalist-observation-select', {
+		new CustomEvent( 'field-observation-showcase-observation-select', {
 			bubbles: true,
 			detail: {
 				id: observationId
@@ -85,7 +85,7 @@ function prefetchPaginationPage() {
 	document.head.appendChild( link );
 }
 
-mapStore = store( 'nature-showcase-for-inaturalist/observations-map', {
+mapStore = store( 'field-observation-showcase/observations-map', {
 	state: {
 		activeObservationId: 0,
 		get isPreviousDisabled() {
@@ -144,7 +144,7 @@ mapStore = store( 'nature-showcase-for-inaturalist/observations-map', {
 	}
 } );
 
-store( 'nature-showcase-for-inaturalist/observations', {
+store( 'field-observation-showcase/observations', {
 	state: {
 		get isPaginationLoading() {
 			return Boolean( getContext().isLoading );

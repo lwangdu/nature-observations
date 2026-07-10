@@ -1,16 +1,16 @@
 {
     "$schema": "https://schemas.wp.org/trunk/block.json",
     "apiVersion": 3,
-    "name": "nature-showcase-for-inaturalist/observations-map",
+    "name": "field-observation-showcase/observations-map",
     "title": "iNaturalist Observations Map",
     "category": "widgets",
     "icon": "location-alt",
     "description": "Display a terrain map with iNaturalist observation pins, a boundary, and recent thumbnails.",
-    "textdomain": "nature-showcase-for-inaturalist",
-    "editorScript": "nature-showcase-for-inaturalist-block",
+    "textdomain": "field-observation-showcase",
+    "editorScript": "field-observation-showcase-block",
     "style": [
-        "nature-showcase-for-inaturalist-leaflet",
-        "nature-showcase-for-inaturalist"
+        "field-observation-showcase-leaflet",
+        "field-observation-showcase"
     ],
     "attributes": {
         "projectId": {

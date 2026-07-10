@@ -1,6 +1,6 @@
-# Nature Showcase for iNaturalist by LWangdu
+# Field Observation Showcase
 
-Nature Showcase for iNaturalist by LWangdu displays observations from an iNaturalist project on WordPress using cached API requests and an intuitive Gutenberg block editor interface. Designed for organizations that manage iNaturalist projects, the plugin makes it easy to showcase project observations on their own website.
+Field Observation Showcase displays observations from an iNaturalist project on WordPress using cached API requests and an intuitive Gutenberg block editor interface. Designed for organizations that manage iNaturalist projects, the plugin makes it easy to showcase project observations on their own website.
 
 The plugin retrieves observations from the iNaturalist API, caches responses using WordPress Transients to improve performance and reduce API requests, and renders a customizable Gutenberg block featuring observation cards, project statistics, filters, and pagination. With a simple block-based interface, you can add dynamic iNaturalist observation displays anywhere on your site.
 
@@ -39,7 +39,7 @@ The plugin creates draft starter `iNaturalist Observations` and `Map of Observat
 
 Use the `iNaturalist Observations Map` block to show a compact map of recent georeferenced observations with a small recent-observations photo strip underneath.
 
-The starter pages inherit the source configured in Settings > Nature Showcase for iNaturalist by LWangdu, so the same plugin can be used across different reserves.
+The starter pages inherit the source configured in Settings > Field Observation Showcase, so the same plugin can be used across different reserves.
 
 ## Third-party Services
 
@@ -56,7 +56,7 @@ This plugin connects to third-party services to display observation and map data
 
 Global defaults are available under:
 
-`Settings > Nature Showcase for iNaturalist by LWangdu`
+`Settings > Field Observation Showcase`
 
 These defaults are used by blocks unless page-specific block settings override them. New installs start without a reserve source, so each site can be configured for its own reserve.
 
