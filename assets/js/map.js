@@ -29,7 +29,7 @@
 		return escapeHtml( value ).replace( /`/g, '&#096;' );
 	}
 
-	function popupHtml( observation ) {
+	function popupHtml( observation, openLinksInNewTab, viewLabel, newTabLabel ) {
 		var html = '';
 
 		if ( observation.photo_url ) {
@@ -47,7 +47,19 @@
 		}
 
 		if ( observation.url ) {
-			html += '<a href="' + escapeAttribute( observation.url ) + '" target="_blank" rel="noopener noreferrer">View on iNaturalist</a>';
+			html += '<a href="' + escapeAttribute( observation.url ) + '"';
+
+			if ( openLinksInNewTab ) {
+				html += ' target="_blank" rel="noopener noreferrer"';
+			}
+
+			html += '>' + escapeHtml( viewLabel );
+
+			if ( openLinksInNewTab ) {
+				html += '<span class="screen-reader-text"> ' + escapeHtml( newTabLabel ) + '</span>';
+			}
+
+			html += '</a>';
 		}
 
 		return html;
@@ -62,6 +74,9 @@
 		var boundaryLayer;
 		var activeMarker;
 		var markerById = {};
+		var openLinksInNewTab = wrapper.getAttribute( 'data-open-links-new-tab' ) === 'true';
+		var viewLabel = wrapper.getAttribute( 'data-view-label' ) || 'View observation';
+		var newTabLabel = wrapper.getAttribute( 'data-new-tab-label' ) || 'opens in a new tab';
 
 		if ( wrapper.dataset.mapInitialized || ! canvas || typeof window.L === 'undefined' ) {
 			return;
@@ -124,7 +139,7 @@
 				fillOpacity: 0.95
 			} )
 				.addTo( map )
-				.bindPopup( popupHtml( observation ) );
+				.bindPopup( popupHtml( observation, openLinksInNewTab, viewLabel, newTabLabel ) );
 
 			markerById[ observation.id ] = marker;
 		} );

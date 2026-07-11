@@ -376,7 +376,7 @@ final class Field_Observation_Showcase_Renderer {
 			<?php elseif ( empty( $observations ) && empty( $boundary_data ) ) : ?>
 				<p class="field-observation-showcase__notice"><?php esc_html_e( 'No mapped observations found for this filter.', 'field-observation-showcase' ); ?></p>
 			<?php else : ?>
-				<div class="field-observation-showcase-map" data-observations="<?php echo esc_attr( wp_json_encode( $observations ) ); ?>" data-boundary="<?php echo esc_attr( wp_json_encode( $boundary_data ) ); ?>">
+				<div class="field-observation-showcase-map" data-observations="<?php echo esc_attr( wp_json_encode( $observations ) ); ?>" data-boundary="<?php echo esc_attr( wp_json_encode( $boundary_data ) ); ?>" data-open-links-new-tab="<?php echo $open_links_in_new_tab ? 'true' : 'false'; ?>" data-view-label="<?php esc_attr_e( 'View on iNaturalist', 'field-observation-showcase' ); ?>" data-new-tab-label="<?php esc_attr_e( 'opens in a new tab', 'field-observation-showcase' ); ?>">
 					<div id="<?php echo esc_attr( $map_id ); ?>" class="field-observation-showcase-map__canvas" data-map-id="<?php echo esc_attr( $map_id ); ?>"></div>
 					<div class="field-observation-showcase-map__recent" aria-label="<?php esc_attr_e( 'Recent mapped observations', 'field-observation-showcase' ); ?>">
 						<h3 class="field-observation-showcase-map__recent-title"><?php esc_html_e( 'Recent Observations', 'field-observation-showcase' ); ?></h3>
@@ -403,6 +403,9 @@ final class Field_Observation_Showcase_Renderer {
 													<img src="<?php echo esc_url( $observation['photo_url'] ); ?>" alt="<?php echo esc_attr( $observation['photo_alt'] ); ?>">
 												<?php else : ?>
 													<span><?php echo esc_html( $observation['common_name'] ); ?></span>
+												<?php endif; ?>
+												<?php if ( $open_links_in_new_tab ) : ?>
+													<span class="screen-reader-text"> <?php esc_html_e( 'opens in a new tab', 'field-observation-showcase' ); ?></span>
 												<?php endif; ?>
 											</a>
 										<?php else : ?>

@@ -353,6 +353,7 @@ final class Field_Observation_Showcase_Cache {
 				'%wp:nature-inat/observations%',
 				'%wp:nature-inat/observations-map%',
 			);
+			$source_like_clauses    = implode( "\n\t\t\t\tOR ", array_fill( 0, count( $source_like_terms ), 'post_content LIKE %s' ) );
 
 			// phpcs:disable WordPress.DB -- Dynamic post type placeholders are prepared below and the result is cached for a day.
 			$post_ids = $wpdb->get_col(
@@ -360,12 +361,7 @@ final class Field_Observation_Showcase_Cache {
 					"SELECT ID FROM {$wpdb->posts}
 					WHERE post_status IN ( 'publish', 'private', 'draft' )
 					AND post_type IN ( {$post_type_placeholders} )
-					AND (
-						post_content LIKE %s
-						OR post_content LIKE %s
-						OR post_content LIKE %s
-						OR post_content LIKE %s
-					)
+					AND ( {$source_like_clauses} )
 					ORDER BY post_modified DESC
 					LIMIT 100",
 					array_merge( array_values( $post_types ), $source_like_terms )
